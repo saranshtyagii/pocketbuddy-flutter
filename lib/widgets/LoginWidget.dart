@@ -1,3 +1,4 @@
+import 'package:PocketBuddy/main.dart';
 import 'package:PocketBuddy/services/AuthServices.dart';
 import 'package:PocketBuddy/services/UserServices.dart';
 import 'package:PocketBuddy/utils/AuthUtils.dart';
@@ -17,6 +18,8 @@ class Loginwidget extends StatefulWidget {
 }
 
 class _LoginwidgetState extends State<Loginwidget> {
+  num configCount = 0; // ToDo: remove when make it live
+
   final _loginFormKey = GlobalKey<FormState>();
 
   final _emailOrUsernameController = TextEditingController();
@@ -176,7 +179,12 @@ class _LoginwidgetState extends State<Loginwidget> {
               SizedBox(height: 24),
               InkWell(
                 onTap: () {
-                  print("Login With Google Clicked!");
+                  configCount += 1;
+                  print(configCount);
+                  if (configCount == 8) {
+                    _showConfigDialog(context);
+                    configCount = 0;
+                  }
                 },
                 child: Container(
                   width: double.infinity,
@@ -263,7 +271,7 @@ class _LoginwidgetState extends State<Loginwidget> {
                       width: 240,
                       child: ElevatedButton(
                         onPressed: () {
-                          if(!_showResetPasswordLoading) {
+                          if (!_showResetPasswordLoading) {
                             _loginFormKey.currentState!.validate();
                             _forgotPassword();
                           }
@@ -341,7 +349,7 @@ class _LoginwidgetState extends State<Loginwidget> {
 
     String response = await authService.forgotPassword(usernameOrEmail);
 
-    if(response.isNotEmpty) {
+    if (response.isNotEmpty) {
       Navigator.of(context).pop();
       _showSnapBar(response);
     } else {
@@ -350,7 +358,6 @@ class _LoginwidgetState extends State<Loginwidget> {
 
     _switchLoading(false, true);
     _loginFormKey.currentState?.reset();
-
   }
 
   _showSnapBar(String text) {
@@ -360,6 +367,65 @@ class _LoginwidgetState extends State<Loginwidget> {
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
+    );
+  }
+  
+  void _showConfigDialog(BuildContext context) {
+    final TextEditingController _hostController = TextEditingController();
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text('Enter Host Port Name'),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              TextField(
+                controller: _hostController,
+                decoration: InputDecoration(
+                  labelText: 'Host Port Name',
+                  border: OutlineInputBorder(),
+                  prefixIcon: Icon(Icons.network_check),
+                ),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                // Close the dialog
+                Navigator.of(context).pop();
+              },
+              child: Text('Cancel'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                final hostPortName = _hostController.text;
+
+                if (hostPortName.isNotEmpty) {
+                  // Save to secure storage
+                  await storage.write(key: 'hostPortName', value: hostPortName);
+
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(content: Text('Host port name saved!')),
+                  );
+
+                  // Close the dialog
+                  Navigator.of(context).pop();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Text('Please enter a valid port name.'),
+                    ),
+                  );
+                }
+              },
+              child: Text('Save'),
+            ),
+          ],
+        );
+      },
     );
   }
 }

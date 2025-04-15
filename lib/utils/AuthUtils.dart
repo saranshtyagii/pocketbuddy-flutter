@@ -19,14 +19,12 @@ class AuthUtils {
   Future<String> getAuthToken() async {
     try {
       String? token = await storage.read(key: ConstantValues.authKey);
-      if(token != null && token.isNotEmpty) {
+      if (token != null && token.isNotEmpty) {
         return token;
       }
-      navigatorKey.currentState?.popUntil((route) => false);
       removeAuthToken();
       return "";
-    } catch(error) {
-      navigatorKey.currentState?.popUntil((route) => false);
+    } catch (error) {
       return "";
     }
   }
@@ -54,9 +52,8 @@ class AuthUtils {
       await removeAuthToken();
       await storage.delete(key: ConstantValues.userKey);
       return true;
-    } catch(error) {
+    } catch (error) {
       return false;
     }
   }
-
 }

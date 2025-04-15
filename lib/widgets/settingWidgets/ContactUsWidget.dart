@@ -38,7 +38,7 @@ class ContactUsWidget extends StatelessWidget {
                     'GitHub (Frontend):',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
-                  Text('https://github.com/saranshtyagii/pocketbuddy-native'),
+                  Text('https://github.com/saranshtyagii/pocketbuddy-flutter'),
                   SizedBox(height: 16),
                   Text(
                     'GitHub (Backend):',

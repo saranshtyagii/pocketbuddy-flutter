@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:PocketBuddy/constants/ConstantValues.dart';
+import 'package:PocketBuddy/constants/UrlConstants.dart';
 import 'package:PocketBuddy/screens/AuthScreen.dart';
 import 'package:PocketBuddy/screens/HomeScreen.dart';
 import 'package:PocketBuddy/utils/AuthUtils.dart';
@@ -9,11 +10,15 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:json_theme/json_theme.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
-final GlobalKey<NavigatorState> navigatorKey = GlobalKey<NavigatorState>();
 
 void main() async {
+  // Initialize Flutter bindings first
   WidgetsFlutterBinding.ensureInitialized();
 
+  // Load backend host port asynchronously
+  await _loadHostPort();
+
+  // Load theme settings
   final lightThemeString = await rootBundle.loadString(
     "assets/themes/theme_light.json",
   );
@@ -28,6 +33,7 @@ void main() async {
     jsonDecode(darkThemeString),
   )!.copyWith(useMaterial3: false);
 
+  // Load saved theme mode from secure storage
   final savedThemeMode = await loadThemeFromStorage();
 
   runApp(
@@ -37,6 +43,21 @@ void main() async {
       initialThemeMode: savedThemeMode,
     ),
   );
+}
+
+// Asynchronous method to load host port
+Future<void> _loadHostPort() async {
+  try {
+    final savedPort = await storage.read(key: "hostPortName");
+    if (savedPort != null) {
+      UrlConstants.hostUrl = savedPort;
+      print("______Host URL is: $savedPort ______");
+    } else {
+      print("Please set your host URL.");
+    }
+  } catch (error) {
+    print("Error while loading port: $error");
+  }
 }
 
 Future<ThemeMode> loadThemeFromStorage() async {
@@ -101,7 +122,6 @@ class _MyAppState extends State<MyApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      navigatorKey: navigatorKey,
       debugShowCheckedModeBanner: false,
       title: 'Pocket Buddy',
       theme: widget.lightThemeData,

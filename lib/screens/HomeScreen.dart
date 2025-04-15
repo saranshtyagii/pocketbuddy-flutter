@@ -15,7 +15,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int selectedNavIndex = 0;
+  int selectedNavIndex = 1;
   bool loadingExpenseData = false;
   bool hasExpenseData = false;
 
