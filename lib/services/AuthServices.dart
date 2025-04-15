@@ -50,9 +50,6 @@ class AuthServices {
       }
     } catch (error) {
       print("AuthServices:\n$error");
-      navigatorKey.currentState?.push(
-        MaterialPageRoute(builder: (context) => ErrorScreen()),
-      );
     }
   }
 
@@ -77,11 +74,7 @@ class AuthServices {
     }
   }
 
-  _pushError() {
-    navigatorKey.currentState?.push(
-      MaterialPageRoute(builder: (context) => ErrorScreen()),
-    );
-  }
+  _pushError() {}
 
   Future<String> forgotPassword(String usernameOrEmail) async {
     try {

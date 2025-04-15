@@ -1,4 +1,5 @@
 import 'package:PocketBuddy/mapper/UserJoinGroup.dart';
+import 'package:PocketBuddy/widgets/groupWidgets/GroupDetailsWidget.dart';
 import 'package:PocketBuddy/widgets/groupWidgets/NoGroupFoundWidget.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -29,11 +30,11 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     return loadingJoinGroupData
         ? Center(child: CircularProgressIndicator())
         : hasJoinedGroups
-        ? GroupDetailsScreen()
-        : Nogroupfoundwidget();
+        ? GroupDetailsWidget(refershGroupList: _loadUserJoinGroups)
+        : Nogroupfoundwidget(refershGroupList: _loadUserJoinGroups);
   }
 
-  _loadUserJoinGroups() async {
+  void _loadUserJoinGroups() async {
     setState(() {
       loadingJoinGroupData = false;
     });

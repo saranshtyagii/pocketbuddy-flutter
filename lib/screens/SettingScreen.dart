@@ -30,29 +30,37 @@ class _SettingScreenState extends State<SettingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _loadingUserDetails
-          ? const Center(child: CircularProgressIndicator())
-          : Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
-        child: Column(
-          children: [
-            _buildProfileCard(context),
-            const SizedBox(height: 24),
-            Expanded(
-              child: ListView(
-                children: [
-                  _buildSettingOption("Stop Ads", Icons.block, 0),
-                  _buildSettingOption("Theme", Icons.palette, 1),
-                  _buildSettingOption("Security", Icons.security, 2),
-                  _buildSettingOption("Update", Icons.system_update, 3),
-                  _buildSettingOption("Contact Us", Icons.contact_support, 4),
-                ],
+      body:
+          _loadingUserDetails
+              ? const Center(child: CircularProgressIndicator())
+              : Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 16,
+                  vertical: 20,
+                ),
+                child: Column(
+                  children: [
+                    _buildProfileCard(context),
+                    const SizedBox(height: 24),
+                    Expanded(
+                      child: ListView(
+                        children: [
+                          _buildSettingOption("Stop Ads", Icons.block, 0),
+                          _buildSettingOption("Theme", Icons.palette, 1),
+                          _buildSettingOption("Security", Icons.security, 2),
+                          _buildSettingOption("Update", Icons.system_update, 3),
+                          _buildSettingOption(
+                            "Contact Us",
+                            Icons.contact_support,
+                            4,
+                          ),
+                        ],
+                      ),
+                    ),
+                    _buildLogoutButton(context),
+                  ],
+                ),
               ),
-            ),
-            _buildLogoutButton(context),
-          ],
-        ),
-      ),
     );
   }
 
@@ -105,7 +113,11 @@ class _SettingScreenState extends State<SettingScreen> {
           title,
           style: GoogleFonts.poppins(fontSize: 16, fontWeight: FontWeight.w500),
         ),
-        trailing: const Icon(Icons.arrow_forward_ios, size: 18, color: Colors.grey),
+        trailing: const Icon(
+          Icons.arrow_forward_ios,
+          size: 18,
+          color: Colors.grey,
+        ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
@@ -135,13 +147,26 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   void _logout(BuildContext context) async {
-    final isLogout = await AuthUtils().logout();
+    try {
+      final isLogout = await AuthUtils().logout();
 
-    if (isLogout && context.mounted) {
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (context) => const AuthScreen()),
-            (route) => false,
-      );
+      if (!context.mounted) return;
+
+      if (isLogout) {
+        Navigator.of(context).pushAndRemoveUntil(
+          MaterialPageRoute(builder: (_) => const AuthScreen()),
+          (route) => false,
+        );
+      } else {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Logout failed. Please try again.')),
+        );
+      }
+    } catch (e) {
+      if (!context.mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Error during logout: $e')));
     }
   }
 
