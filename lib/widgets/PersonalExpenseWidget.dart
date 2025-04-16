@@ -1,7 +1,11 @@
+import 'dart:io';
+
+import 'package:PocketBuddy/constants/ConstantValues.dart';
 import 'package:PocketBuddy/mapper/PersonalExpenseData.dart';
 import 'package:PocketBuddy/services/PersonalExpenseService.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'package:intl/intl.dart';
 
 import '../mapper/UserDetails.dart';
@@ -31,21 +35,33 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
 
   final personalExpenseService = PersonalExpenseService();
 
+  BannerAd? bannerAd;
+  bool isAdLoaded = false;
+
   @override
   void initState() {
     super.initState();
     calculateTotalExpense();
     calculateCurrentMonthsExpense();
+    initBannerAd();
   }
 
-  calculateTotalExpense() {
-    totalExpense = 0.0;
-    for (var expense in widget.personalExpenseData) {
-      totalExpense += expense.amount;
-    }
+  @override
+  void dispose() {
+    _amountController.dispose();
+    _descriptionController.dispose();
+    bannerAd?.dispose();
+    super.dispose();
   }
 
-  calculateCurrentMonthsExpense() {
+  void calculateTotalExpense() {
+    totalExpense = widget.personalExpenseData.fold(
+      0.0,
+      (sum, expense) => sum + expense.amount,
+    );
+  }
+
+  void calculateCurrentMonthsExpense() {
     final now = DateTime.now();
     final currentMonth = now.month;
     final currentYear = now.year;
@@ -66,9 +82,30 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
     }
   }
 
+  void initBannerAd() {
+    final adUnitId =
+        Platform.isAndroid
+            ? ConstantValues.bannerAdIdAndroid
+            : ConstantValues.bannerAdIdIOS;
+
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: adUnitId,
+      listener: BannerAdListener(
+        onAdLoaded: (_) => setState(() => isAdLoaded = true),
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          debugPrint('BannerAd failed to load: $error');
+        },
+      ),
+      request: const AdRequest(),
+    )..load();
+  }
+
   @override
   Widget build(BuildContext context) {
     final currency = NumberFormat.currency(symbol: '₹');
+
     return Padding(
       padding: const EdgeInsets.all(16),
       child: Column(
@@ -76,6 +113,12 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
           _buildSummaryCard(context),
           const SizedBox(height: 16),
           _buildExpensesContainer(context, currency),
+          if (isAdLoaded && bannerAd != null)
+            SizedBox(
+              width: bannerAd!.size.width.toDouble(),
+              height: bannerAd!.size.height.toDouble(),
+              child: AdWidget(ad: bannerAd!),
+            ),
         ],
       ),
     );
@@ -150,25 +193,23 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
                 itemCount: widget.personalExpenseData.length,
                 itemBuilder: (context, index) {
                   final expense = widget.personalExpenseData[index];
-                  return GestureDetector(
-                    onTap: () => _openExpenseDetails(expense),
-                    child: Card(
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(15),
+                  return Card(
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    margin: const EdgeInsets.symmetric(vertical: 6),
+                    elevation: 1,
+                    child: ListTile(
+                      onTap: () => _openExpenseDetails(expense),
+                      title: Text(expense.description),
+                      subtitle: Text(
+                        DateFormat.yMMMd().format(expense.expenseDate),
                       ),
-                      margin: const EdgeInsets.symmetric(vertical: 6),
-                      elevation: 1,
-                      child: ListTile(
-                        title: Text(expense.description),
-                        subtitle: Text(
-                          DateFormat.yMMMd().format(expense.expenseDate),
-                        ),
-                        trailing: Text(
-                          currency.format(expense.amount),
-                          style: const TextStyle(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.redAccent,
-                          ),
+                      trailing: Text(
+                        currency.format(expense.amount),
+                        style: const TextStyle(
+                          fontWeight: FontWeight.bold,
+                          color: Colors.redAccent,
                         ),
                       ),
                     ),
@@ -190,14 +231,9 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
           "Personal Expenses",
           style: GoogleFonts.lato(fontSize: 20, fontWeight: FontWeight.w600),
         ),
-        Row(
-          children: [
-            IconButton(onPressed: () {}, icon: const Icon(Icons.sort_rounded)),
-            IconButton(
-              onPressed: () => _showAddExpenseSheetUI(context),
-              icon: const Icon(Icons.add_rounded),
-            ),
-          ],
+        IconButton(
+          icon: const Icon(Icons.add_rounded),
+          onPressed: () => _showAddExpenseSheetUI(context),
         ),
       ],
     );
@@ -207,118 +243,114 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      builder: (context) {
-        return Padding(
-          padding: EdgeInsets.only(
-            bottom: MediaQuery.of(context).viewInsets.bottom,
-          ),
-          child: Container(
-            height: MediaQuery.of(context).size.height * 0.5,
-            padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
-            decoration: BoxDecoration(
-              color: Theme.of(context).colorScheme.surface,
-              borderRadius: const BorderRadius.vertical(
-                top: Radius.circular(24),
-              ),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder:
+          (context) => Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+              top: 16,
+              left: 16,
+              right: 16,
             ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                _buildAddExpenseHeader(),
-                const SizedBox(height: 20),
-                Form(
-                  key: _addExpenseFormKey,
-                  child: Column(
+            child: Form(
+              key: _addExpenseFormKey,
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      _buildTextField(
-                        controller: _descriptionController,
-                        icon: Icons.description_outlined,
-                        label: 'Description',
-                        validatorMsg: 'Please enter a description',
+                      IconButton(
+                        icon: const Icon(Icons.close),
+                        onPressed: () => Navigator.pop(context),
                       ),
-                      const SizedBox(height: 12),
-                      _buildTextField(
-                        controller: _amountController,
-                        icon: Icons.currency_rupee_rounded,
-                        label: 'Amount',
-                        keyboardType: TextInputType.number,
-                        validatorMsg: 'Please enter amount',
+                      const Text(
+                        "Add Expense",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      TextButton(
+                        onPressed: _addExpense,
+                        child: const Text("Save"),
                       ),
                     ],
                   ),
-                ),
-              ],
+                  TextFormField(
+                    controller: _descriptionController,
+                    decoration: const InputDecoration(labelText: "Description"),
+                    validator:
+                        (val) =>
+                            val == null || val.isEmpty
+                                ? "Enter description"
+                                : null,
+                  ),
+                  TextFormField(
+                    controller: _amountController,
+                    decoration: const InputDecoration(labelText: "Amount"),
+                    keyboardType: TextInputType.number,
+                    validator:
+                        (val) =>
+                            val == null || val.isEmpty ? "Enter amount" : null,
+                  ),
+                  const SizedBox(height: 20),
+                ],
+              ),
             ),
           ),
-        );
-      },
     );
   }
 
-  Widget _buildAddExpenseHeader() {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        IconButton(
-          onPressed: () => Navigator.of(context).pop(),
-          icon: const Icon(Icons.close_rounded),
-        ),
-        const Text(
-          "Add Expense",
-          style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-        ),
-        TextButton(onPressed: _addExpense, child: const Text("Save")),
-      ],
-    );
-  }
+  Future<void> _addExpense() async {
+    if (!_addExpenseFormKey.currentState!.validate()) return;
 
-  Widget _buildTextField({
-    required TextEditingController controller,
-    required IconData icon,
-    required String label,
-    required String validatorMsg,
-    TextInputType? keyboardType,
-  }) {
-    return TextFormField(
-      controller: controller,
-      validator:
-          (value) =>
-              value == null || value.trim().isEmpty ? validatorMsg : null,
-      keyboardType: keyboardType,
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon),
-        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-        labelText: label,
-      ),
-    );
-  }
-
-  _addExpense() async {
     final description = _descriptionController.text.trim();
-    final amount = _amountController.text.trim();
+    final amountText = _amountController.text.trim();
+    double amount;
 
-    UserDetails? savedUser = await UserDetails.getInstance();
-    Map<String, dynamic> addRequest = {
-      'userId': savedUser?.userId,
+    try {
+      if (amountText.contains("+")) {
+        amount = amountText
+            .split("+")
+            .map((e) => double.tryParse(e.trim()) ?? 0.0)
+            .reduce((a, b) => a + b);
+      } else {
+        amount = double.parse(amountText);
+      }
+    } catch (_) {
+      _showErrorMessage("Invalid amount format");
+      return;
+    }
+
+    final user = await UserDetails.getInstance();
+    if (user == null || user.userId == null) {
+      _showErrorMessage("User not found");
+      return;
+    }
+
+    final success = await personalExpenseService.addExpense({
+      'userId': user.userId,
       'expenseId': '',
       'description': description,
-      'amount': double.parse(amount),
-    };
+      'amount': amount,
+    });
 
-    bool expenseAdded = await personalExpenseService.addExpense(addRequest);
-    Navigator.of(context).pop();
-    if (expenseAdded) {
+    if (success) {
+      Navigator.pop(context);
       widget.refreshExpenseData();
+      _addExpenseFormKey.currentState!.reset();
     } else {
-      _showErrorMessage('Unable to add Expense. Please try again.');
+      _showErrorMessage("Failed to add expense");
     }
-    _addExpenseFormKey.currentState?.reset();
   }
 
-  _showErrorMessage(text) {
+  void _showErrorMessage(String message) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(text),
+        content: Text(message),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
       ),
@@ -438,9 +470,7 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
                             Align(
                               alignment: Alignment.centerRight,
                               child: ElevatedButton(
-                                onPressed: ()  {
-
-                                },
+                                onPressed: () {},
                                 child: const Text("Update"),
                               ),
                             ),
@@ -516,7 +546,7 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
 
   _deleteExpense(String expenseId) async {
     bool response = await personalExpenseService.deleteExpense(expenseId);
-    if(response) {
+    if (response) {
       widget.refreshExpenseData();
       _popWidget();
     } else {
@@ -524,6 +554,7 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
       _showSnapBar("Unable to delete expense");
     }
   }
+
   _popWidget() {
     Navigator.of(context).pop();
   }
@@ -537,5 +568,4 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
       ),
     );
   }
-
 }
