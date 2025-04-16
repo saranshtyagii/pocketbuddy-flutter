@@ -9,14 +9,17 @@ import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:json_theme/json_theme.dart';
 
+import 'package:google_mobile_ads/google_mobile_ads.dart';
+
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
 void main() async {
   // Initialize Flutter bindings first
   WidgetsFlutterBinding.ensureInitialized();
+  await MobileAds.instance.initialize();
 
   // Load backend host port asynchronously
-  await _loadHostPort();
+  // await _loadHostPort();
 
   // Load theme settings
   final lightThemeString = await rootBundle.loadString(

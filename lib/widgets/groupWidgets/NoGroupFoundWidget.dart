@@ -1,8 +1,12 @@
+import 'dart:io';
+
+import 'package:PocketBuddy/constants/ConstantValues.dart';
 import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/utils/AuthUtils.dart';
 import 'package:PocketBuddy/widgets/groupWidgets/RegisterGroupWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class Nogroupfoundwidget extends StatefulWidget {
   const Nogroupfoundwidget({super.key, required this.refershGroupList});
@@ -17,27 +21,56 @@ class _NogroupfoundwidgetState extends State<Nogroupfoundwidget> {
   final _searchFormKey = GlobalKey<FormState>();
   final TextEditingController _searchController = TextEditingController();
 
-  // load login user details form storage
   UserDetails? loginUser;
   String authToken = "";
 
   bool _loadingData = true;
 
+  late BannerAd bannerAd;
+  bool isAdLoaded = false;
+
   @override
   void initState() {
-    _loadPreRequestData();
     super.initState();
+    _loadPreRequestData();
+    initBannerAd();
+  }
+
+  void initBannerAd() {
+    String addId =
+        Platform.isAndroid
+            ? ConstantValues.bannerAdIdAndroid
+            : ConstantValues.bannerAdIdIOS;
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId: addId,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          print("Failed to load Banner Ad in Nogroupfoundwidget: $error");
+        },
+      ),
+      request: const AdRequest(),
+    );
+
+    bannerAd.load();
   }
 
   @override
   Widget build(BuildContext context) {
     return _loadingData
-        ? Center(child: CircularProgressIndicator())
+        ? const Center(child: CircularProgressIndicator())
         : Padding(
           padding: const EdgeInsets.all(16),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
+              // Search Form
               Container(
                 padding: const EdgeInsets.all(16),
                 decoration: BoxDecoration(
@@ -47,19 +80,18 @@ class _NogroupfoundwidgetState extends State<Nogroupfoundwidget> {
                 child: Form(
                   key: _searchFormKey,
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
                         child: TextFormField(
                           controller: _searchController,
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             labelText: 'Group code',
                             border: OutlineInputBorder(),
                             prefixIcon: Icon(Icons.search),
                           ),
                         ),
                       ),
-                      SizedBox(width: 14),
+                      const SizedBox(width: 14),
                       ElevatedButton(
                         onPressed: () {},
                         style: ElevatedButton.styleFrom(
@@ -86,8 +118,10 @@ class _NogroupfoundwidgetState extends State<Nogroupfoundwidget> {
                   ),
                 ),
               ),
+
+              // Message
               Column(
-                children: [
+                children: const [
                   Text(
                     "No Group Found!",
                     style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
@@ -99,46 +133,60 @@ class _NogroupfoundwidgetState extends State<Nogroupfoundwidget> {
                   ),
                 ],
               ),
+
               Column(
-                mainAxisAlignment: MainAxisAlignment.end,
-                crossAxisAlignment: CrossAxisAlignment.end,
                 children: [
-                  InkWell(
-                    onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (context) => RegisterGroupWidget(),
-                        ),
-                      );
-                    },
-                    child: Container(
-                      padding: EdgeInsets.symmetric(
-                        horizontal: 18,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        borderRadius: BorderRadius.circular(50),
-                      ),
-                      child: Text(
-                        "+",
-                        style: GoogleFonts.lato(
-                          fontSize: 36,
-                          color: Theme.of(context).colorScheme.surface,
+                  Padding(
+                    padding: const EdgeInsets.all(8.0),
+                    child: Align(
+                      alignment: Alignment.bottomRight,
+                      child: GestureDetector(
+                        onTap: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (context) => RegisterGroupWidget(),
+                            ),
+                          );
+                        },
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          decoration: BoxDecoration(
+                            color:
+                                Theme.of(context).colorScheme.primaryContainer,
+                            borderRadius: BorderRadius.circular(40),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.15),
+                                blurRadius: 8,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Text(
+                            "+",
+                            style: GoogleFonts.lato(
+                              fontSize: 32,
+                              fontWeight: FontWeight.bold,
+                              color:
+                                  Theme.of(
+                                    context,
+                                  ).colorScheme.onPrimaryContainer,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  SizedBox(height: 16),
-                  Container(
-                    padding: EdgeInsets.all(12),
-                    width: double.infinity,
-                    height: 50,
-                    decoration: BoxDecoration(
-                      color: Theme.of(context).colorScheme.primaryFixedDim,
+                  if (isAdLoaded) const SizedBox(height: 16),
+                  if (isAdLoaded)
+                    SizedBox(
+                      width: bannerAd.size.width.toDouble(),
+                      height: bannerAd.size.height.toDouble(),
+                      child: AdWidget(ad: bannerAd),
                     ),
-                    child: Center(child: Text("Loading Ads...")),
-                  ),
                 ],
               ),
             ],
@@ -146,7 +194,7 @@ class _NogroupfoundwidgetState extends State<Nogroupfoundwidget> {
         );
   }
 
-  _loadPreRequestData() async {
+  Future<void> _loadPreRequestData() async {
     authToken = await AuthUtils().getAuthToken();
     loginUser = await UserDetails.getInstance();
     setState(() {
@@ -154,7 +202,7 @@ class _NogroupfoundwidgetState extends State<Nogroupfoundwidget> {
     });
   }
 
-  _findGroup() {}
+  void _findGroup() {}
 
-  _registerGroup() {}
+  void _registerGroup() {}
 }

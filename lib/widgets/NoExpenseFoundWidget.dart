@@ -1,3 +1,6 @@
+import 'dart:io';
+
+import 'package:PocketBuddy/constants/ConstantValues.dart';
 import 'package:PocketBuddy/main.dart';
 import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/screens/AuthScreen.dart';
@@ -6,6 +9,7 @@ import 'package:PocketBuddy/services/PersonalExpenseService.dart';
 import 'package:PocketBuddy/utils/AuthUtils.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_mobile_ads/google_mobile_ads.dart';
 
 class NoExpenseFoundWidget extends StatefulWidget {
   const NoExpenseFoundWidget({super.key, required this.refreshExpenseData});
@@ -26,12 +30,46 @@ class _NoExpenseFoundWidgetState extends State<NoExpenseFoundWidget> {
   final personalExpenseService = PersonalExpenseService();
 
   @override
+  void initState() {
+    super.initState();
+    initBannerAd();
+  }
+
+  late BannerAd bannerAd;
+  bool isAdLoaded = false;
+
+  void initBannerAd() {
+    bannerAd = BannerAd(
+      size: AdSize.banner,
+      adUnitId:
+          Platform.isAndroid
+              ? ConstantValues.bannerAdIdAndroid
+              : ConstantValues.bannerAdIdIOS,
+      listener: BannerAdListener(
+        onAdLoaded: (ad) {
+          setState(() {
+            isAdLoaded = true;
+          });
+        },
+        onAdFailedToLoad: (ad, error) {
+          ad.dispose();
+          print("Failed to load Banner Ad in Nogroupfoundwidget: $error");
+        },
+      ),
+      request: const AdRequest(),
+    );
+
+    bannerAd.load();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [
+        // Centered Text
         Center(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
+            mainAxisSize: MainAxisSize.min,
             children: const [
               Text(
                 "No Expense Found!",
@@ -45,9 +83,11 @@ class _NoExpenseFoundWidgetState extends State<NoExpenseFoundWidget> {
             ],
           ),
         ),
+
+        // Positioned FAB at bottom right
         Positioned(
-          bottom: 20,
-          right: 20,
+          bottom: isAdLoaded ? 80 : 24, // Push it up if ad is loaded
+          right: 24,
           child: FloatingActionButton(
             onPressed: () {
               _showAddExpenseSheetUI(context);
@@ -55,6 +95,21 @@ class _NoExpenseFoundWidgetState extends State<NoExpenseFoundWidget> {
             child: const Icon(Icons.add),
           ),
         ),
+
+        // Ad at bottom center
+        if (isAdLoaded)
+          Positioned(
+            bottom: 16,
+            left: 0,
+            right: 0,
+            child: Center(
+              child: SizedBox(
+                width: bannerAd.size.width.toDouble(),
+                height: bannerAd.size.height.toDouble(),
+                child: AdWidget(ad: bannerAd),
+              ),
+            ),
+          ),
       ],
     );
   }
@@ -109,6 +164,7 @@ class _NoExpenseFoundWidgetState extends State<NoExpenseFoundWidget> {
                     children: [
                       TextFormField(
                         controller: _descriptionController,
+                        maxLength: 50,
                         validator: (value) {
                           if (value == null || value.trim().isEmpty) {
                             return "Please enter a description";
@@ -154,30 +210,62 @@ class _NoExpenseFoundWidgetState extends State<NoExpenseFoundWidget> {
   }
 
   _addExpense() async {
-    // extract the data
     final description = _descriptionController.text.trim();
-    final amount = _amountController.text.trim();
+    final addAmount = _amountController.text.trim();
 
-    // bind the data
+    if (description.isEmpty || addAmount.isEmpty) {
+      _showErrorMessage("Please fill in all the fields.");
+      return;
+    }
+
+    double updatedAmount = 0;
+
+    try {
+      if (addAmount.contains("+")) {
+        final splitAmount = addAmount.split("+");
+        for (var amount in splitAmount) {
+          final parsed = double.tryParse(amount.trim());
+          if (parsed == null) {
+            _showErrorMessage("Invalid amount format.");
+            return;
+          }
+          updatedAmount += parsed;
+        }
+      } else {
+        final parsed = double.tryParse(addAmount);
+        if (parsed == null) {
+          _showErrorMessage("Invalid amount format.");
+          return;
+        }
+        updatedAmount = parsed;
+      }
+    } catch (e) {
+      _showErrorMessage("Something went wrong while parsing amount.");
+      return;
+    }
 
     UserDetails? savedUser = await UserDetails.getInstance();
+    if (savedUser == null || savedUser.userId == null) {
+      _showErrorMessage("User not found.");
+      return;
+    }
+
     Map<String, dynamic> addRequest = {
-      'userId': savedUser?.userId,
+      'userId': savedUser.userId,
       'expenseId': '',
       'description': description,
-      'amount': double.parse(amount)
+      'amount': updatedAmount,
     };
 
     bool expenseAdded = await personalExpenseService.addExpense(addRequest);
-    Navigator.of(context).pop();
+
     if (expenseAdded) {
+      Navigator.of(context).pop();
       widget.refreshExpenseData();
+      _addExpenseFormKey.currentState?.reset();
     } else {
-      _showErrorMessage(
-        'Unable to add Expense. Please try again.',
-      );
+      _showErrorMessage('Unable to add expense. Please try again.');
     }
-    _addExpenseFormKey.currentState?.reset();
   }
 
   _showErrorMessage(text) {
