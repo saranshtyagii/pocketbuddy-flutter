@@ -33,7 +33,7 @@ class GroupDetailService {
     return [];
   }
 
-  Future<bool> registerGroup(Map<String, dynamic> group) async {
+  Future<UserJoinGroup?> registerGroup(Map<String, dynamic> group) async {
     try {
       final Uri url = Uri.parse("${UrlConstants.backendUrlV1}/group/new-group");
       final String token = await AuthUtils().getAuthToken();
@@ -46,16 +46,13 @@ class GroupDetailService {
         },
         body: json.encode(group),
       );
-
       if (registerResponse.statusCode == 200) {
-        return true;
+        final responseJson = jsonDecode(registerResponse.body);
+        return UserJoinGroup.fromJson(responseJson);
       }
-
     } catch (error) {
-      // Better error logging
+      // ignore
     }
-    return false;
+    return null;
   }
-
-
 }

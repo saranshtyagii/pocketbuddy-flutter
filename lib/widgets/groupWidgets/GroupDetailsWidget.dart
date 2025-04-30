@@ -62,7 +62,7 @@ class _GroupDetailsWidgetState extends State<GroupDetailsWidget> {
                 child: ElevatedButton(
                   onPressed: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => RegisterGroupWidget(refreshGroupList: _refreshRoom, savedUserDetails: savedUser))
+                      MaterialPageRoute(builder: (context) => RegisterGroupWidget(savedUserDetails: savedUser))
                     );
                   },
                   style: ElevatedButton.styleFrom(
@@ -173,10 +173,6 @@ class _GroupDetailsWidgetState extends State<GroupDetailsWidget> {
         builder: (context) => GroupExpenseDetailsScreen(group: group),
       ),
     );
-  }
-
-  _refreshRoom() {
-    widget.refreshGroupList();
   }
 
   _fetchSavedUser() async {

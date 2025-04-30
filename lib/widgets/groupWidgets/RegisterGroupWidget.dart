@@ -1,5 +1,6 @@
 import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/mapper/UserJoinGroup.dart';
+import 'package:PocketBuddy/screens/GroupExpenseDetailsScreen.dart';
 import 'package:PocketBuddy/services/GroupDetailsService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -7,13 +8,8 @@ import 'package:intl/intl.dart';
 import '../../mapper/RegisterGroup.dart';
 
 class RegisterGroupWidget extends StatefulWidget {
-  const RegisterGroupWidget({
-    super.key,
-    required this.refreshGroupList,
-    required this.savedUserDetails,
-  });
+  const RegisterGroupWidget({super.key, required this.savedUserDetails});
 
-  final Function refreshGroupList;
   final UserDetails? savedUserDetails;
 
   @override
@@ -31,6 +27,8 @@ class _RegisterGroupWidgetState extends State<RegisterGroupWidget> {
   DateTime? _tripStartDate;
   DateTime? _tripEndDate;
   bool _isTripGroup = false;
+
+  bool _showLoading = false;
 
   final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
   final groupDetailsService = GroupDetailService();
@@ -155,7 +153,30 @@ class _RegisterGroupWidgetState extends State<RegisterGroupWidget> {
                 width: double.infinity,
                 child: ElevatedButton(
                   onPressed: _submitForm,
-                  child: const Text("Create Group"),
+                  style: ElevatedButton.styleFrom(
+                    padding: EdgeInsets.all(22),
+                    backgroundColor: Theme.of(
+                      context,
+                    ).colorScheme.onSurface.withOpacity(0.7),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(20),
+                    ),
+                  ),
+                  child:
+                      _showLoading
+                          ? SizedBox(
+                            width: 20,
+                            height: 20,
+                            child: CircularProgressIndicator(
+                              color: Theme.of(context).colorScheme.surface,
+                            ),
+                          )
+                          : Text(
+                            "Create Group",
+                            style: TextStyle(
+                              color: Theme.of(context).colorScheme.surface,
+                            ),
+                          ),
                 ),
               ),
             ],
@@ -210,7 +231,11 @@ class _RegisterGroupWidgetState extends State<RegisterGroupWidget> {
   }
 
   void _submitForm() async {
+    if (_showLoading) {
+      return;
+    }
     if (_formKey.currentState?.validate() ?? false) {
+      _switchLoading();
       final groupName = _groupNameController.text.trim();
       final description = _descriptionController.text.trim();
       double groupBudget = double.tryParse(_groupBudgetController.text) ?? 0.0;
@@ -228,11 +253,24 @@ class _RegisterGroupWidgetState extends State<RegisterGroupWidget> {
         _tripEndDate != null ? _tripEndDate! : DateTime.now(),
       );
 
-      bool isGroupCreated = await groupDetailsService.registerGroup(
+      UserJoinGroup? userJoinGroup = await groupDetailsService.registerGroup(
         registerGroup.toJson(),
       );
-
-      if (isGroupCreated) {}
+      _switchLoading();
+      if (userJoinGroup != null) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(
+            builder:
+                (context) => GroupExpenseDetailsScreen(group: userJoinGroup),
+          ),
+        );
+      }
     }
+  }
+
+  _switchLoading() {
+    setState(() {
+      _showLoading = !_showLoading;
+    });
   }
 }

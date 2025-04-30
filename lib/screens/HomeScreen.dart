@@ -6,7 +6,7 @@ import 'package:PocketBuddy/widgets/authWidgets/EmailOrPhoneVerified.dart';
 import 'package:flutter/material.dart';
 
 import '../mapper/PersonalExpenseData.dart';
-import '../widgets/NoExpenseFoundWidget.dart';
+import '../widgets/groupWidgets/NoExpenseFoundWidget.dart';
 import '../widgets/PersonalExpenseWidget.dart';
 import 'SettingScreen.dart';
 

@@ -145,7 +145,6 @@ class _NoGroupFoundWidgetState extends State<NoGroupFoundWidget> {
                           Navigator.of(context).push(
                             MaterialPageRoute(
                               builder: (context) => RegisterGroupWidget(
-                                refreshGroupList: refreshDetails,
                                 savedUserDetails: loginUser,
                               ),
                             ),
@@ -211,10 +210,6 @@ class _NoGroupFoundWidgetState extends State<NoGroupFoundWidget> {
 
   void _registerGroup() {
     
-  }
-
-  void refreshDetails() {
-    widget.refreshGroupList;
   }
 
 }
