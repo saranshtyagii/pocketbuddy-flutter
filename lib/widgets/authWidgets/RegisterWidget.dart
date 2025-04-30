@@ -1,10 +1,11 @@
+import 'package:PocketBuddy/widgets/authWidgets/EmailOrPhoneVerified.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/services/AuthServices.dart';
 
-import '../screens/HomeScreen.dart';
-import '../utils/AuthUtils.dart';
+import '../../screens/HomeScreen.dart';
+import '../../utils/AuthUtils.dart';
 
 class RegisterWidget extends StatefulWidget {
   const RegisterWidget({super.key, required this.switchScreen});
@@ -69,7 +70,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 12),
+                    SizedBox(height: 16),
                     TextFormField(
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
@@ -86,40 +87,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: _mobileNumberController,
-                      keyboardType: TextInputType.number,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "phone number is empty";
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        labelText: "phone number",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
-                    TextFormField(
-                      controller: _usernameController,
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "username can't be empty";
-                        }
-                        return null;
-                      },
-                      decoration: InputDecoration(
-                        labelText: "username",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(50),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 12),
+                    SizedBox(height: 16),
                     TextFormField(
                       controller: _registerPasswordController,
                       validator: (value) {
@@ -135,7 +103,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                         ),
                       ),
                     ),
-                    SizedBox(height: 12),
+                    SizedBox(height: 16),
                     TextFormField(
                       controller: _registerConfirmPasswordController,
                       validator: (value) {
@@ -223,23 +191,34 @@ class _RegisterWidgetState extends State<RegisterWidget> {
 
   registerAccount() async {
     // extract data //
-    final fullName = _fullNameController.text.trim().split(" ");
+    final userEnterName = _fullNameController.text.trim();
+    var fullName;
+    if(userEnterName.contains(" ")) {
+      fullName = _fullNameController.text.trim().split(" ");
+    } else {
+      fullName = userEnterName;
+    }
     final email = _emailController.text.trim();
     final mobileNumber = _mobileNumberController.text.trim();
-    final username = _usernameController.text.trim();
     final password = _registerPasswordController.text;
-    final firstName = fullName[0];
-    final lastName = fullName[1];
+    var firstName = "";
+    var lastName = "";
+    if(userEnterName.contains(" ")) {
+      firstName = fullName[0];
+      lastName = fullName[1];
+    } else {
+      firstName = fullName;
+    }
 
     // Bind Data into Object //
     final userDetails = UserDetails(
       userId: '',
       userFirstName: firstName,
       userLastName: lastName,
-      username: username,
       email: email,
       mobileNumber: mobileNumber,
       password: password,
+      emailVerified: false
     );
 
     // convert Data into Json

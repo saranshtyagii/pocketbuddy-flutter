@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'package:PocketBuddy/constants/ConstantValues.dart';
-import 'package:PocketBuddy/constants/UrlConstants.dart';
 import 'package:PocketBuddy/screens/AuthScreen.dart';
 import 'package:PocketBuddy/screens/HomeScreen.dart';
 import 'package:PocketBuddy/utils/AuthUtils.dart';
@@ -8,59 +7,28 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:json_theme/json_theme.dart';
-
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+import 'package:video_player/video_player.dart';
 
 final FlutterSecureStorage storage = FlutterSecureStorage();
 
 void main() async {
-  // Initialize Flutter bindings first
   WidgetsFlutterBinding.ensureInitialized();
   await MobileAds.instance.initialize();
 
-  // Load backend host port asynchronously
-  // await _loadHostPort();
+  final lightThemeString = await rootBundle.loadString("assets/themes/theme_light.json");
+  final darkThemeString = await rootBundle.loadString("assets/themes/theme_dark.json");
 
-  // Load theme settings
-  final lightThemeString = await rootBundle.loadString(
-    "assets/themes/theme_light.json",
-  );
-  final darkThemeString = await rootBundle.loadString(
-    "assets/themes/theme_dark.json",
-  );
+  final lightTheme = ThemeDecoder.decodeThemeData(jsonDecode(lightThemeString))!.copyWith(useMaterial3: false);
+  final darkTheme = ThemeDecoder.decodeThemeData(jsonDecode(darkThemeString))!.copyWith(useMaterial3: false);
 
-  final lightTheme = ThemeDecoder.decodeThemeData(
-    jsonDecode(lightThemeString),
-  )!.copyWith(useMaterial3: false);
-  final darkTheme = ThemeDecoder.decodeThemeData(
-    jsonDecode(darkThemeString),
-  )!.copyWith(useMaterial3: false);
-
-  // Load saved theme mode from secure storage
   final savedThemeMode = await loadThemeFromStorage();
 
-  runApp(
-    MyApp(
-      lightThemeData: lightTheme,
-      darkThemeData: darkTheme,
-      initialThemeMode: savedThemeMode,
-    ),
-  );
-}
-
-// Asynchronous method to load host port
-Future<void> _loadHostPort() async {
-  try {
-    final savedPort = await storage.read(key: "hostPortName");
-    if (savedPort != null) {
-      UrlConstants.hostUrl = savedPort;
-      print("______Host URL is: $savedPort ______");
-    } else {
-      print("Please set your host URL.");
-    }
-  } catch (error) {
-    print("Error while loading port: $error");
-  }
+  runApp(MyApp(
+    lightThemeData: lightTheme,
+    darkThemeData: darkTheme,
+    initialThemeMode: savedThemeMode,
+  ));
 }
 
 Future<ThemeMode> loadThemeFromStorage() async {
@@ -91,8 +59,7 @@ class MyApp extends StatefulWidget {
     required this.initialThemeMode,
   });
 
-  static _MyAppState? of(BuildContext context) =>
-      context.findAncestorStateOfType<_MyAppState>();
+  static _MyAppState? of(BuildContext context) => context.findAncestorStateOfType<_MyAppState>();
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -130,20 +97,72 @@ class _MyAppState extends State<MyApp> {
       theme: widget.lightThemeData,
       darkTheme: widget.darkThemeData,
       themeMode: _themeMode,
-      home: FutureBuilder<bool>(
-        future: AuthUtils().havingAuthToken(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Scaffold(
-              body: Center(child: CircularProgressIndicator()),
-            );
-          } else if (snapshot.hasData && snapshot.data == true) {
-            return const HomeScreen();
-          } else {
-            return const AuthScreen();
-          }
-        },
+      home: const SplashAndAuthGate(),
+    );
+  }
+}
+
+// ✅ Handles Splash Video + Auth Check
+class SplashAndAuthGate extends StatefulWidget {
+  const SplashAndAuthGate({Key? key}) : super(key: key);
+
+  @override
+  State<SplashAndAuthGate> createState() => _SplashAndAuthGateState();
+}
+
+class _SplashAndAuthGateState extends State<SplashAndAuthGate> {
+  late VideoPlayerController _controller;
+  bool _navigated = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = VideoPlayerController.asset('assets/video/Pocket_Buddy_Animation_Logo.mp4')
+      ..initialize().then((_) {
+        setState(() {});
+        _controller.play();
+      });
+
+    _controller.addListener(() {
+      if (_controller.value.position >= _controller.value.duration && !_navigated) {
+        _navigated = true;
+        _checkAuthAndNavigate();
+      }
+    });
+  }
+
+  Future<void> _checkAuthAndNavigate() async {
+    bool isLoggedIn = await AuthUtils().havingAuthToken();
+    if (!mounted) return;
+    Navigator.of(context).pushReplacement(
+      MaterialPageRoute(
+        builder: (_) => isLoggedIn ? const HomeScreen() : const AuthScreen(),
       ),
     );
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: _controller.value.isInitialized
+          ? SizedBox.expand(
+        child: FittedBox(
+          fit: BoxFit.cover,
+          child: SizedBox(
+            width: _controller.value.size.width,
+            height: _controller.value.size.height,
+            child: VideoPlayer(_controller),
+          ),
+        ),
+      )
+          : const Center(child: CircularProgressIndicator()),
+    );
+
   }
 }

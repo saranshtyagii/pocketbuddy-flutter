@@ -1,5 +1,8 @@
+import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/screens/GroupDetailsScreen.dart';
+import 'package:PocketBuddy/services/AuthServices.dart';
 import 'package:PocketBuddy/services/PersonalExpenseService.dart';
+import 'package:PocketBuddy/widgets/authWidgets/EmailOrPhoneVerified.dart';
 import 'package:flutter/material.dart';
 
 import '../mapper/PersonalExpenseData.dart';
@@ -20,12 +23,14 @@ class _HomeScreenState extends State<HomeScreen> {
   bool hasExpenseData = false;
 
   final personalExpenseService = PersonalExpenseService();
+  final authService = AuthServices();
 
   List<PersonalExpenseData> savedExpense = [];
 
   @override
   void initState() {
     super.initState();
+    _isUserVerified();
     _refreshExpenseData();
   }
 
@@ -124,4 +129,18 @@ class _HomeScreenState extends State<HomeScreen> {
       loadingExpenseData = !loadingExpenseData;
     });
   }
+
+  _isUserVerified() async {
+    UserDetails? savedUser = await UserDetails.fetchUserDetailsFromStorage();
+    if(!savedUser!.emailVerified) {
+      // fetch latest USerDetails
+      bool verified = await authService.isEmailVerified(savedUser.email);
+      if(!verified) {
+        Navigator.of(context).pushReplacement(
+          MaterialPageRoute(builder: (context) => EmailOrPhoneVerified(loginWith: "email", emailAddress: savedUser.email))
+        );
+      }
+    }
+  }
+
 }

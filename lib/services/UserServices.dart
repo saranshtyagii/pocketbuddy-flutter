@@ -14,7 +14,7 @@ class UserServices {
   fetchUserDetails(String usernameOrEmail) async {
     try {
       Uri uri = Uri.parse(
-        '${UrlConstants.backendUrlV1}/user/find?usernameOrEmail=$usernameOrEmail',
+        '${UrlConstants.backendUrlV1}/user/find?email=$usernameOrEmail',
       );
 
       final token = await AuthUtils().getAuthToken();

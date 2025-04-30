@@ -1,4 +1,6 @@
+import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/mapper/UserJoinGroup.dart';
+import 'package:PocketBuddy/services/GroupDetailsService.dart';
 import 'package:PocketBuddy/widgets/groupWidgets/GroupDetailsWidget.dart';
 import 'package:PocketBuddy/widgets/groupWidgets/NoGroupFoundWidget.dart';
 import 'package:flutter/cupertino.dart';
@@ -19,6 +21,8 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
   bool loadingJoinGroupData = true;
   bool hasJoinedGroups = false;
 
+  final groupDetailsService = GroupDetailService();
+
   @override
   void initState() {
     _loadUserJoinGroups();
@@ -30,13 +34,24 @@ class _GroupDetailsScreenState extends State<GroupDetailsScreen> {
     return loadingJoinGroupData
         ? Center(child: CircularProgressIndicator())
         : hasJoinedGroups
-        ? GroupDetailsWidget(refershGroupList: _loadUserJoinGroups)
-        : Nogroupfoundwidget(refershGroupList: _loadUserJoinGroups);
+        ? GroupDetailsWidget(refreshGroupList: _loadUserJoinGroups, joinGroups: joinGroup,)
+        : NoGroupFoundWidget(refreshGroupList: _loadUserJoinGroups);
   }
 
   void _loadUserJoinGroups() async {
+    UserDetails? userDetails = await UserDetails.fetchUserDetailsFromStorage();
+    final response = await groupDetailsService.loadUserJoinGroup(userDetails!.userId);
+    if(response.isNotEmpty) {
+      joinGroup = response;
+      hasJoinedGroups = true;
+    }
+    stopLoading();
+  }
+
+  stopLoading() {
     setState(() {
-      loadingJoinGroupData = false;
+      loadingJoinGroupData = !loadingJoinGroupData;
     });
   }
+
 }

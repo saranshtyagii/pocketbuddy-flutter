@@ -6,7 +6,7 @@ import 'package:PocketBuddy/utils/DeviceInfoUtils.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import '../screens/HomeScreen.dart';
+import '../../screens/HomeScreen.dart';
 
 class Loginwidget extends StatefulWidget {
   const Loginwidget({super.key, required this.switchScreen});
@@ -24,10 +24,14 @@ class _LoginwidgetState extends State<Loginwidget> {
 
   final _emailOrUsernameController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _phoneNumberController = TextEditingController();
+  final _otpController = TextEditingController();
 
   bool _passwordVisibility = false;
   bool _showLoading = false;
   bool _showResetPasswordLoading = false;
+  bool _isOtpGenerateRequested = false;
+  bool _resendOtp = false;
 
   final authService = AuthServices();
   final userServices = UserServices();
@@ -63,14 +67,14 @@ class _LoginwidgetState extends State<Loginwidget> {
                       controller: _emailOrUsernameController,
                       decoration: InputDecoration(
                         prefixIcon: Icon(Icons.person),
-                        labelText: 'username or email',
+                        labelText: 'email',
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(50),
                         ),
                       ),
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "username or email can't be empty";
+                          return "email can't be empty";
                         }
                         return null;
                       },
@@ -214,6 +218,35 @@ class _LoginwidgetState extends State<Loginwidget> {
                   ),
                 ),
               ),
+              SizedBox(height: 22),
+              InkWell(
+                onTap: () {
+                  _buildLoginWithPhone();
+                },
+                child: Container(
+                  width: double.infinity,
+                  padding: EdgeInsets.all(15),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.onSurface,
+                    borderRadius: BorderRadius.circular(50),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      Icon(Icons.phone, color: Theme.of(context).colorScheme.surface,),
+                      SizedBox(width: 8),
+                      Text(
+                        "Login With Phone",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.surface,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
             ],
           ),
         ),
@@ -307,9 +340,105 @@ class _LoginwidgetState extends State<Loginwidget> {
     );
   }
 
+  _buildLoginWithPhone() {
+    showModalBottomSheet(
+      context: context,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: double.infinity,
+              width: double.infinity,
+              padding: EdgeInsets.all(24),
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Center(
+                      child: Text(
+                        "Login With Phone",
+                        style: TextStyle(fontSize: 24),
+                      ),
+                    ),
+                    SizedBox(height: 36),
+                    TextFormField(
+                      controller: _phoneNumberController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        labelText: 'Enter your Phone',
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(50),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 24),
+                    if(_isOtpGenerateRequested)
+                      TextFormField(
+                        controller: _phoneNumberController,
+                        keyboardType: TextInputType.number,
+                        decoration: InputDecoration(
+                          labelText: 'Enter your OTP',
+                          border: OutlineInputBorder(
+                            borderRadius: BorderRadius.circular(50),
+                          ),
+                        ),
+                      ),
+                    if(_isOtpGenerateRequested) SizedBox(height: 18),
+                    if(_isOtpGenerateRequested)
+                      Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        Text("Resend otp in: 59")
+                      ],
+                    ),
+                    SizedBox(height: 24),
+                    SizedBox(
+                      width: 240,
+                      child: ElevatedButton(
+                        onPressed: () {
+                          if (!_showResetPasswordLoading) {
+                            _loginFormKey.currentState!.validate();
+                            _forgotPassword();
+                          }
+                        },
+                        style: ButtonStyle(
+                          padding: WidgetStateProperty.all(EdgeInsets.all(18)),
+                          shape: WidgetStateProperty.all(
+                            RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(50),
+                            ),
+                          ),
+                        ),
+                        child:
+                        !_showResetPasswordLoading
+                            ? Text(!_resendOtp ? "Generate OTP" : "Resend OTP")
+                            : SizedBox(
+                          height: 22,
+                          width: 22,
+                          child: CircularProgressIndicator(
+                            color:
+                            Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
   authenticateUser() async {
     // extract data
-    final usernameOrEmail = _emailOrUsernameController.text.trim();
+    final email = _emailOrUsernameController.text.trim();
     final password = _passwordController.text;
 
     // fetch device details
@@ -317,7 +446,7 @@ class _LoginwidgetState extends State<Loginwidget> {
 
     // Bind Data as JSON
     Map<String, dynamic> userCredentials = {
-      'usernameOrEmail': usernameOrEmail,
+      'email': email,
       'password': password,
       'deviceId': deviceInfo.deviceId,
       'ipAddress': deviceInfo.ipAddress,
@@ -330,7 +459,7 @@ class _LoginwidgetState extends State<Loginwidget> {
     await authService.authenticateUserAccount(userCredentials);
 
     if (await AuthUtils().havingAuthToken()) {
-      await userServices.fetchUserDetails(usernameOrEmail);
+      await userServices.fetchUserDetails(email);
       Navigator.of(
         context,
       ).pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen()));

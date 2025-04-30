@@ -8,16 +8,16 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 
-class Nogroupfoundwidget extends StatefulWidget {
-  const Nogroupfoundwidget({super.key, required this.refershGroupList});
+class NoGroupFoundWidget extends StatefulWidget {
+  const NoGroupFoundWidget({super.key, required this.refreshGroupList});
 
-  final Function refershGroupList;
+  final Function refreshGroupList;
 
   @override
-  State<Nogroupfoundwidget> createState() => _NogroupfoundwidgetState();
+  State<NoGroupFoundWidget> createState() => _NoGroupFoundWidgetState();
 }
 
-class _NogroupfoundwidgetState extends State<Nogroupfoundwidget> {
+class _NoGroupFoundWidgetState extends State<NoGroupFoundWidget> {
   final _searchFormKey = GlobalKey<FormState>();
   final TextEditingController _searchController = TextEditingController();
 
@@ -144,7 +144,10 @@ class _NogroupfoundwidgetState extends State<Nogroupfoundwidget> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (context) => RegisterGroupWidget(),
+                              builder: (context) => RegisterGroupWidget(
+                                refreshGroupList: refreshDetails,
+                                savedUserDetails: loginUser,
+                              ),
                             ),
                           );
                         },
@@ -202,7 +205,16 @@ class _NogroupfoundwidgetState extends State<Nogroupfoundwidget> {
     });
   }
 
-  void _findGroup() {}
+  void _findGroup() {
+    
+  }
 
-  void _registerGroup() {}
+  void _registerGroup() {
+    
+  }
+
+  void refreshDetails() {
+    widget.refreshGroupList;
+  }
+
 }

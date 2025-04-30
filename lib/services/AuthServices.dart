@@ -1,5 +1,6 @@
 import 'dart:convert';
 
+import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/screens/HomeScreen.dart';
 import 'package:PocketBuddy/services/UserServices.dart';
 import 'package:PocketBuddy/utils/AuthUtils.dart';
@@ -29,7 +30,7 @@ class AuthServices {
 
         if (registerResponse.statusCode == 200) {
           Map<String, dynamic> userCredentials = {
-            'usernameOrEmail': userJsonData['username'].toString(),
+            'email': userJsonData['email'].toString(),
             'password': userJsonData['password'].toString(),
             'deviceId': deviceInfo.deviceId,
             'ipAddress': deviceInfo.ipAddress,
@@ -43,7 +44,7 @@ class AuthServices {
 
           if (await AuthUtils().havingAuthToken()) {
             await userServices.fetchUserDetails(
-              userJsonData['username'].toString(),
+              userJsonData['email'].toString(),
             );
           }
         }
@@ -87,4 +88,19 @@ class AuthServices {
       return "";
     }
   }
+
+  Future<bool> isEmailVerified(String email) async {
+    // refresh UserDetails
+    userServices.fetchUserDetails(email);
+
+    // load user details from storage
+    UserDetails? savedUser = await UserDetails.fetchUserDetailsFromStorage();
+
+    if(savedUser!.emailVerified) {
+      return true;
+    }
+
+    return false;
+  }
+
 }

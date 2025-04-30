@@ -33,14 +33,14 @@ class DeviceInfoUtils {
     }
 
     // Ip Address
-    try {
-      final response = await http.get(Uri.parse('https://api.ipify.org?format=json'));
-      if(response.statusCode == 200) {
-        deviceDetails.ipAddress = jsonDecode(response.body)['ip'];
-      }
-    } catch(error) {
-      deviceDetails.ipAddress = 'Unavailable';
-    }
+    // try {
+    //   final response = await http.get(Uri.parse('https://api.ipify.org?format=json'));
+    //   if(response.statusCode == 200) {
+    //     deviceDetails.ipAddress = jsonDecode(response.body)['ip'];
+    //   }
+    // } catch(error) {
+    //   deviceDetails.ipAddress = 'Unavailable';
+    // }
 
     // AppVersion
     try {

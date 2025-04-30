@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:PocketBuddy/widgets/LoginWidget.dart';
-import 'package:PocketBuddy/widgets/RegisterWidget.dart';
+import 'package:PocketBuddy/widgets/authWidgets/LoginWidget.dart';
+import 'package:PocketBuddy/widgets/authWidgets/RegisterWidget.dart';
 
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});

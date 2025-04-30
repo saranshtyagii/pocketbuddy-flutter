@@ -41,6 +41,7 @@ dependencies:
   package_info_plus: ^8.3.0
   connectivity_plus: ^6.1.3
   google_mobile_ads: ^4.0.0
+  video_player: ^2.7.0
 
 dev_dependencies:
   flutter_test:
@@ -71,6 +72,7 @@ flutter:
     - assets/images/Pocket_Buddy_Logo_bg_removed.png
     - assets/images/google_logo.png
     - assets/images/default_profile.png
+    - assets/video/Pocket_Buddy_Animation_Logo.mp4
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images

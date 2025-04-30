@@ -1,8 +1,20 @@
+import 'package:PocketBuddy/mapper/UserDetails.dart';
+import 'package:PocketBuddy/mapper/UserJoinGroup.dart';
+import 'package:PocketBuddy/services/GroupDetailsService.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
+import '../../mapper/RegisterGroup.dart';
+
 class RegisterGroupWidget extends StatefulWidget {
-  const RegisterGroupWidget({super.key});
+  const RegisterGroupWidget({
+    super.key,
+    required this.refreshGroupList,
+    required this.savedUserDetails,
+  });
+
+  final Function refreshGroupList;
+  final UserDetails? savedUserDetails;
 
   @override
   State<RegisterGroupWidget> createState() => _RegisterGroupWidgetState();
@@ -21,6 +33,7 @@ class _RegisterGroupWidgetState extends State<RegisterGroupWidget> {
   bool _isTripGroup = false;
 
   final DateFormat _dateFormat = DateFormat('dd MMM yyyy');
+  final groupDetailsService = GroupDetailService();
 
   @override
   Widget build(BuildContext context) {
@@ -181,7 +194,7 @@ class _RegisterGroupWidgetState extends State<RegisterGroupWidget> {
     final picked = await showDatePicker(
       context: context,
       initialDate: DateTime.now(),
-      firstDate: DateTime(2020),
+      firstDate: DateTime(2000),
       lastDate: DateTime(2100),
     );
 
@@ -196,23 +209,30 @@ class _RegisterGroupWidgetState extends State<RegisterGroupWidget> {
     }
   }
 
-  void _submitForm() {
+  void _submitForm() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // TODO: Use collected data here
-      final groupName = _groupNameController.text;
-      final description = _descriptionController.text;
-      final groupBudget = double.tryParse(_groupBudgetController.text);
-      final budgetPerDay = double.tryParse(_budgetPerDayController.text);
+      final groupName = _groupNameController.text.trim();
+      final description = _descriptionController.text.trim();
+      double groupBudget = double.tryParse(_groupBudgetController.text) ?? 0.0;
+      double budgetPerDay =
+          double.tryParse(_budgetPerDayController.text) ?? 0.0;
 
-      print("Group Name: $groupName");
-      print("Description: $description");
-      print("Is Trip: $_isTripGroup");
-      print("Budget: $groupBudget");
-      print("Budget/Day: $budgetPerDay");
-      print("Start: $_tripStartDate");
-      print("End: $_tripEndDate");
+      // Bind the data into a RegisterGroup object
+      final registerGroup = RegisterGroup(
+        groupName,
+        description,
+        widget.savedUserDetails!.userId,
+        groupBudget,
+        budgetPerDay,
+        _tripStartDate != null ? _tripStartDate! : DateTime.now(),
+        _tripEndDate != null ? _tripEndDate! : DateTime.now(),
+      );
 
-      // You can now pass this to your backend or controller
+      bool isGroupCreated = await groupDetailsService.registerGroup(
+        registerGroup.toJson(),
+      );
+
+      if (isGroupCreated) {}
     }
   }
 }
