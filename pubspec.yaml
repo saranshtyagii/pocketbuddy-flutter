@@ -40,7 +40,7 @@ dependencies:
   device_info_plus: ^11.3.3
   package_info_plus: ^8.3.0
   connectivity_plus: ^6.1.3
-  google_mobile_ads: ^4.0.0
+  google_mobile_ads: ^6.0.0
   video_player: ^2.7.0
 
 dev_dependencies:

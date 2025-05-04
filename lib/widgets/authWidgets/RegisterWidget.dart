@@ -21,13 +21,12 @@ class _RegisterWidgetState extends State<RegisterWidget> {
 
   final _fullNameController = TextEditingController();
   final _emailController = TextEditingController();
-  final _usernameController = TextEditingController();
   final _mobileNumberController = TextEditingController();
   final _registerPasswordController = TextEditingController();
   final _registerConfirmPasswordController = TextEditingController();
 
   bool _showLoading = false;
-
+  bool _passwordVisibility = false;
   final authService = AuthServices();
 
   @override
@@ -78,6 +77,9 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                         if (value == null || value.isEmpty) {
                           return "email can't be empty";
                         }
+                        if(!value.contains("@")) {
+                          return "Email address is not valid";
+                        }
                         return null;
                       },
                       decoration: InputDecoration(
@@ -92,14 +94,38 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                       controller: _registerPasswordController,
                       validator: (value) {
                         if (value == null || value.isEmpty) {
-                          return "password is empty";
+                          return "Password is empty";
                         }
+
+                        if (value.length <= 8) {
+                          return "Password must be greater than 8 characters";
+                        }
+
+                        // Regex: At least one digit and one special character from [@#!%]
+                        final regex = RegExp(r'^(?=.*[0-9])(?=.*[@#!%]).+$');
+                        if (!regex.hasMatch(value)) {
+                          return "Password must contain at least one number and one special character (@, #, !, %)";
+                        }
+
                         return null;
                       },
+
+                      obscureText: !_passwordVisibility,
                       decoration: InputDecoration(
                         labelText: "password",
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(50),
+                        ),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _passwordVisibility = !_passwordVisibility;
+                            });
+                          },
+                          icon:
+                          _passwordVisibility
+                              ? Icon(Icons.visibility)
+                              : Icon(Icons.visibility_off),
                         ),
                       ),
                     ),
@@ -116,10 +142,22 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                         }
                         return null;
                       },
+                      obscureText: !_passwordVisibility,
                       decoration: InputDecoration(
                         labelText: "confirm password",
                         border: OutlineInputBorder(
                           borderRadius: BorderRadius.circular(50),
+                        ),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            setState(() {
+                              _passwordVisibility = !_passwordVisibility;
+                            });
+                          },
+                          icon:
+                              _passwordVisibility
+                                  ? Icon(Icons.visibility)
+                                  : Icon(Icons.visibility_off),
                         ),
                       ),
                     ),
@@ -190,10 +228,13 @@ class _RegisterWidgetState extends State<RegisterWidget> {
   }
 
   registerAccount() async {
+
+    _formKey.currentState?.validate();
+
     // extract data //
     final userEnterName = _fullNameController.text.trim();
     var fullName;
-    if(userEnterName.contains(" ")) {
+    if (userEnterName.contains(" ")) {
       fullName = _fullNameController.text.trim().split(" ");
     } else {
       fullName = userEnterName;
@@ -201,9 +242,16 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     final email = _emailController.text.trim();
     final mobileNumber = _mobileNumberController.text.trim();
     final password = _registerPasswordController.text;
+    final confirmPassword = _registerConfirmPasswordController.text;
+
+    if(password.compareTo(confirmPassword) != 0) {
+      _switchLoading();
+      return "Password and confirm password don't match";
+    }
+
     var firstName = "";
     var lastName = "";
-    if(userEnterName.contains(" ")) {
+    if (userEnterName.contains(" ")) {
       firstName = fullName[0];
       lastName = fullName[1];
     } else {
@@ -218,7 +266,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
       email: email,
       mobileNumber: mobileNumber,
       password: password,
-      emailVerified: false
+      emailVerified: false,
     );
 
     // convert Data into Json

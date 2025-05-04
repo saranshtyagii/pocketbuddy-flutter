@@ -53,7 +53,7 @@ class _NoExpenseFoundWidgetState extends State<NoExpenseFoundWidget> {
         },
         onAdFailedToLoad: (ad, error) {
           ad.dispose();
-          print("Failed to load Banner Ad in Nogroupfoundwidget: $error");
+          print("Failed to load Banner Ad in No group found: $error");
         },
       ),
       request: const AdRequest(),

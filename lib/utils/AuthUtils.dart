@@ -54,8 +54,8 @@ class AuthUtils {
 
   Future<bool> logout() async {
     try {
-      await removeAuthToken();
       await storage.delete(key: ConstantValues.userKey);
+      await removeAuthToken();
       return true;
     } catch (error) {
       return false;

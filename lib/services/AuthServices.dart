@@ -1,14 +1,10 @@
 import 'dart:convert';
 
 import 'package:PocketBuddy/mapper/UserDetails.dart';
-import 'package:PocketBuddy/screens/HomeScreen.dart';
 import 'package:PocketBuddy/services/UserServices.dart';
 import 'package:PocketBuddy/utils/AuthUtils.dart';
-import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:PocketBuddy/constants/UrlConstants.dart';
-import 'package:PocketBuddy/exceptions/ErrorScreen.dart';
-import 'package:PocketBuddy/main.dart';
 
 import '../utils/DeviceInfoUtils.dart';
 

@@ -6,8 +6,8 @@ import 'package:PocketBuddy/widgets/authWidgets/EmailOrPhoneVerified.dart';
 import 'package:flutter/material.dart';
 
 import '../mapper/PersonalExpenseData.dart';
-import '../widgets/groupWidgets/NoExpenseFoundWidget.dart';
-import '../widgets/PersonalExpenseWidget.dart';
+import '../widgets/persoanlExpenseWidgets/NoExpenseFoundWidget.dart';
+import '../widgets/persoanlExpenseWidgets/PersonalExpenseWidget.dart';
 import 'SettingScreen.dart';
 
 class HomeScreen extends StatefulWidget {

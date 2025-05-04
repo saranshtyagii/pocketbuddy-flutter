@@ -32,7 +32,7 @@ class ContactUsWidget extends StatelessWidget {
                     'Email:',
                     style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
                   ),
-                  Text('work.saranshtyagi@gmail.com'),
+                  Text('pocketbuddy.nexlogix@gmail.com'),
                   SizedBox(height: 16),
                   Text(
                     'GitHub (Frontend):',

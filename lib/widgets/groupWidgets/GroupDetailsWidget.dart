@@ -1,5 +1,7 @@
 import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/mapper/UserJoinGroup.dart';
+import 'package:PocketBuddy/services/GroupDetailsService.dart';
+import 'package:PocketBuddy/widgets/groupWidgets/JoinGroupWidget.dart';
 import 'package:PocketBuddy/widgets/groupWidgets/RegisterGroupWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -21,12 +23,17 @@ class GroupDetailsWidget extends StatefulWidget {
 }
 
 class _GroupDetailsWidgetState extends State<GroupDetailsWidget> {
-  TextEditingController _searchController = TextEditingController();
+  final _searchController = TextEditingController();
 
   // To store the filtered list
   late List<UserJoinGroup> filteredGroups;
 
   late UserDetails savedUser;
+  bool _findingGroup = false;
+
+  final groupDetailService = GroupDetailService();
+  late UserJoinGroup? findGroup;
+  late Map<String, String> joinMembers;
 
   @override
   void initState() {
@@ -37,68 +44,97 @@ class _GroupDetailsWidgetState extends State<GroupDetailsWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: EdgeInsets.all(8),
-      child: Column(
-        children: [
-          // Search bar for entering Group Id
-          Row(
+    return _findingGroup
+        ? Center(child: CircularProgressIndicator())
+        : Padding(
+          padding: EdgeInsets.all(8),
+          child: Column(
             children: [
-              Expanded(
-                child: TextFormField(
-                  controller: _searchController,
-                  decoration: InputDecoration(
-                    labelText: 'find group to join (ex: group id)',
-                    prefixIcon: Icon(Icons.group),
-                    suffixIcon: IconButton(
-                      onPressed: _filterGroups,
-                      icon: Icon(Icons.search),
+              // Search bar for entering Group Id
+              Row(
+                children: [
+                  Expanded(
+                    child: TextFormField(
+                      controller: _searchController,
+                      decoration: InputDecoration(
+                        labelText: 'find group to join (ex: group id)',
+                        prefixIcon: Icon(Icons.group),
+                        suffixIcon: IconButton(
+                          onPressed: _findGroup,
+                          icon: Icon(Icons.search),
+                        ),
+                      ),
                     ),
                   ),
-                ),
-              ),
-              Padding(
-                padding: EdgeInsets.only(left: 16),
-                child: ElevatedButton(
-                  onPressed: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(builder: (context) => RegisterGroupWidget(savedUserDetails: savedUser))
-                    );
-                  },
-                  style: ElevatedButton.styleFrom(
-                    padding: EdgeInsets.symmetric(vertical: 24, horizontal: 16),
-                    backgroundColor: Theme.of(context).colorScheme.secondaryContainer
-                  ),
-                  child: Text(
-                      "New Group",
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.onSurface,
-                        fontSize: 16,
-                        fontWeight: FontWeight.w500
+                  Padding(
+                    padding: EdgeInsets.only(left: 16),
+                    child: ElevatedButton(
+                      onPressed: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder:
+                                (context) => RegisterGroupWidget(
+                                  savedUserDetails: savedUser,
+                                ),
+                          ),
+                        );
+                      },
+                      style: ElevatedButton.styleFrom(
+                        padding: EdgeInsets.symmetric(
+                          vertical: 24,
+                          horizontal: 16,
+                        ),
+                        backgroundColor:
+                            Theme.of(context).colorScheme.secondaryContainer,
                       ),
+                      child: Text(
+                        "New Group",
+                        style: TextStyle(
+                          color: Theme.of(context).colorScheme.onSurface,
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                ],
               ),
+              SizedBox(height: 24),
+              // Displaying join group details
+              Expanded(child: _buildJoinGroupDetails()),
             ],
           ),
-          SizedBox(height: 24),
-          // Displaying join group details
-          Expanded(child: _buildJoinGroupDetails()),
-        ],
-      ),
-    );
+        );
   }
 
   // Filter the groups based on search input
-  void _filterGroups() {
+  void _findGroup() async {
     setState(() {
-      String query = _searchController.text.toLowerCase();
-      filteredGroups =
-          widget.joinGroups
-              .where((group) => group.groupName.toLowerCase().contains(query))
-              .toList();
+      _findingGroup = true;
     });
+    // extract data
+    final groupId = _searchController.text.trim();
+    findGroup = await groupDetailService.findGroup(groupId);
+    joinMembers = await groupDetailService.fetchJoinMembers(groupId);
+    if (findGroup != null && joinMembers != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder:
+              (context) => JoinGroupWidget(
+                joinGroup: findGroup!,
+                joinMembers: joinMembers,
+              ),
+        ),
+      );
+      setState(() {
+        _findingGroup = false;
+      });
+    } else {
+      // show scafold message error message that invalid groupID
+    }
   }
+
+  void _joinGroup() async {}
 
   // Build the join group details in the list
   _buildJoinGroupDetails() {
