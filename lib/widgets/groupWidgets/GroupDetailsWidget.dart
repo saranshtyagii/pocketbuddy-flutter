@@ -116,7 +116,7 @@ class _GroupDetailsWidgetState extends State<GroupDetailsWidget> {
     final groupId = _searchController.text.trim();
     findGroup = await groupDetailService.findGroup(groupId);
     joinMembers = await groupDetailService.fetchJoinMembers(groupId);
-    if (findGroup != null && joinMembers != null) {
+    if (findGroup != null) {
       Navigator.of(context).push(
         MaterialPageRoute(
           builder:

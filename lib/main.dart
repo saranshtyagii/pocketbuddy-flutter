@@ -16,19 +16,27 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await MobileAds.instance.initialize();
 
-  final lightThemeString = await rootBundle.loadString("assets/themes/theme_light.json");
-  final darkThemeString = await rootBundle.loadString("assets/themes/theme_dark.json");
+  final lightThemeString = await rootBundle.loadString(
+    "assets/themes/theme_light.json",
+  );
+  final darkThemeString = await rootBundle.loadString(
+    "assets/themes/theme_dark.json",
+  );
 
-  final lightTheme = ThemeDecoder.decodeThemeData(jsonDecode(lightThemeString))!.copyWith(useMaterial3: false);
-  final darkTheme = ThemeDecoder.decodeThemeData(jsonDecode(darkThemeString))!.copyWith(useMaterial3: false);
+  final lightTheme =
+      ThemeDecoder.decodeThemeData(jsonDecode(lightThemeString))!.copyWith();
+  final darkTheme =
+      ThemeDecoder.decodeThemeData(jsonDecode(darkThemeString))!.copyWith();
 
   final savedThemeMode = await loadThemeFromStorage();
 
-  runApp(MyApp(
-    lightThemeData: lightTheme,
-    darkThemeData: darkTheme,
-    initialThemeMode: savedThemeMode,
-  ));
+  runApp(
+    MyApp(
+      lightThemeData: lightTheme,
+      darkThemeData: darkTheme,
+      initialThemeMode: savedThemeMode,
+    ),
+  );
 }
 
 Future<ThemeMode> loadThemeFromStorage() async {
@@ -59,7 +67,8 @@ class MyApp extends StatefulWidget {
     required this.initialThemeMode,
   });
 
-  static _MyAppState? of(BuildContext context) => context.findAncestorStateOfType<_MyAppState>();
+  static _MyAppState? of(BuildContext context) =>
+      context.findAncestorStateOfType<_MyAppState>();
 
   @override
   State<MyApp> createState() => _MyAppState();
@@ -104,7 +113,7 @@ class _MyAppState extends State<MyApp> {
 
 // ✅ Handles Splash Video + Auth Check
 class SplashAndAuthGate extends StatefulWidget {
-  const SplashAndAuthGate({Key? key}) : super(key: key);
+  const SplashAndAuthGate({super.key});
 
   @override
   State<SplashAndAuthGate> createState() => _SplashAndAuthGateState();
@@ -117,14 +126,17 @@ class _SplashAndAuthGateState extends State<SplashAndAuthGate> {
   @override
   void initState() {
     super.initState();
-    _controller = VideoPlayerController.asset('assets/video/Pocket_Buddy_Animation_Logo.mp4')
+    _controller = VideoPlayerController.asset(
+        'assets/video/Pocket_Buddy_Animation_Logo.mp4',
+      )
       ..initialize().then((_) {
         setState(() {});
         _controller.play();
       });
 
     _controller.addListener(() {
-      if (_controller.value.position >= _controller.value.duration && !_navigated) {
+      if (_controller.value.position >= _controller.value.duration &&
+          !_navigated) {
         _navigated = true;
         _checkAuthAndNavigate();
       }
@@ -150,19 +162,19 @@ class _SplashAndAuthGateState extends State<SplashAndAuthGate> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: _controller.value.isInitialized
-          ? SizedBox.expand(
-        child: FittedBox(
-          fit: BoxFit.cover,
-          child: SizedBox(
-            width: _controller.value.size.width,
-            height: _controller.value.size.height,
-            child: VideoPlayer(_controller),
-          ),
-        ),
-      )
-          : const Center(child: CircularProgressIndicator()),
+      body:
+          _controller.value.isInitialized
+              ? SizedBox.expand(
+                child: FittedBox(
+                  fit: BoxFit.cover,
+                  child: SizedBox(
+                    width: _controller.value.size.width,
+                    height: _controller.value.size.height,
+                    child: VideoPlayer(_controller),
+                  ),
+                ),
+              )
+              : const Center(child: CircularProgressIndicator()),
     );
-
   }
 }

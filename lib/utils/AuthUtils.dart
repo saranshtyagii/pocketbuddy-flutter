@@ -1,6 +1,5 @@
 import 'package:PocketBuddy/constants/ConstantValues.dart';
 import 'package:PocketBuddy/main.dart';
-import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/services/AuthServices.dart';
 
 class AuthUtils {
@@ -54,8 +53,7 @@ class AuthUtils {
 
   Future<bool> logout() async {
     try {
-      await storage.delete(key: ConstantValues.userKey);
-      await removeAuthToken();
+      await storage.deleteAll();
       return true;
     } catch (error) {
       return false;

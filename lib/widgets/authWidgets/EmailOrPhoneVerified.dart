@@ -1,12 +1,15 @@
 import 'dart:async';
 
-import 'package:PocketBuddy/screens/AuthScreen.dart';
 import 'package:PocketBuddy/screens/HomeScreen.dart';
 import 'package:PocketBuddy/services/AuthServices.dart';
 import 'package:flutter/material.dart';
 
 class EmailOrPhoneVerified extends StatefulWidget {
-  const EmailOrPhoneVerified({super.key, required this.loginWith, required this.emailAddress});
+  const EmailOrPhoneVerified({
+    super.key,
+    required this.loginWith,
+    required this.emailAddress,
+  });
 
   final String loginWith;
   final String emailAddress;
@@ -22,6 +25,8 @@ class _EmailOrPhoneVerified extends State<EmailOrPhoneVerified> {
 
   final authService = AuthServices();
   Timer? _timer;
+
+  bool _showLoading = false;
 
   @override
   void initState() {
@@ -69,8 +74,11 @@ class _EmailOrPhoneVerified extends State<EmailOrPhoneVerified> {
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      Icon(Icons.warning_amber_rounded,
-                          color: theme.colorScheme.error, size: 48),
+                      Icon(
+                        Icons.warning_amber_rounded,
+                        color: theme.colorScheme.error,
+                        size: 48,
+                      ),
                       const SizedBox(height: 16),
                       Text(
                         "Verification Required",
@@ -91,10 +99,19 @@ class _EmailOrPhoneVerified extends State<EmailOrPhoneVerified> {
                         width: double.infinity,
                         child: ElevatedButton.icon(
                           onPressed: () {
-                            // Your verification logic here
+                            _reVerifiedEmail();
                           },
-                          icon: Icon(Icons.refresh),
-                          label: Text("Resend Verification"),
+                          icon: !_showLoading ? Icon(Icons.refresh) : null,
+                          label:
+                              !_showLoading
+                                  ? Text("Resend Verification")
+                                  : SizedBox(
+                                    height: 24,
+                                    width: 24,
+                                    child: CircularProgressIndicator(
+                                      color: theme.colorScheme.surface,
+                                    ),
+                                  ),
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -122,11 +139,33 @@ class _EmailOrPhoneVerified extends State<EmailOrPhoneVerified> {
 
   _refreshPage() async {
     bool isVerified = await authService.isEmailVerified(widget.emailAddress);
-    if(isVerified) {
-      Navigator.of(context).pushReplacement(
-        MaterialPageRoute(builder: (context) => HomeScreen())
+    if (isVerified) {
+      Navigator.of(
+        context,
+      ).pushReplacement(MaterialPageRoute(builder: (context) => HomeScreen()));
+    }
+  }
+
+  _reVerifiedEmail() async {
+    _switchLogin();
+    if(_showLoading) {
+      return;
+    }
+    String email = widget.emailAddress;
+    bool response = await authService.reVerifiedEmail(email);
+    _switchLogin();
+    if (response) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Email has been send to register email address'),
+        ),
       );
     }
   }
 
+  void _switchLogin() {
+    setState(() {
+      _showLoading = !_showLoading;
+    });
+  }
 }

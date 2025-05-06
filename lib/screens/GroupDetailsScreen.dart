@@ -3,7 +3,6 @@ import 'package:PocketBuddy/mapper/UserJoinGroup.dart';
 import 'package:PocketBuddy/services/GroupDetailsService.dart';
 import 'package:PocketBuddy/widgets/groupWidgets/GroupDetailsWidget.dart';
 import 'package:PocketBuddy/widgets/groupWidgets/NoGroupFoundWidget.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 
 class GroupDetailsScreen extends StatefulWidget {

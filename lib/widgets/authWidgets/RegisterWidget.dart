@@ -77,7 +77,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                         if (value == null || value.isEmpty) {
                           return "email can't be empty";
                         }
-                        if(!value.contains("@")) {
+                        if (!value.contains("@")) {
                           return "Email address is not valid";
                         }
                         return null;
@@ -123,9 +123,9 @@ class _RegisterWidgetState extends State<RegisterWidget> {
                             });
                           },
                           icon:
-                          _passwordVisibility
-                              ? Icon(Icons.visibility)
-                              : Icon(Icons.visibility_off),
+                              _passwordVisibility
+                                  ? Icon(Icons.visibility)
+                                  : Icon(Icons.visibility_off),
                         ),
                       ),
                     ),
@@ -228,12 +228,11 @@ class _RegisterWidgetState extends State<RegisterWidget> {
   }
 
   registerAccount() async {
-
     _formKey.currentState?.validate();
 
     // extract data //
     final userEnterName = _fullNameController.text.trim();
-    var fullName;
+    final fullName;
     if (userEnterName.contains(" ")) {
       fullName = _fullNameController.text.trim().split(" ");
     } else {
@@ -244,7 +243,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
     final password = _registerPasswordController.text;
     final confirmPassword = _registerConfirmPasswordController.text;
 
-    if(password.compareTo(confirmPassword) != 0) {
+    if (password.compareTo(confirmPassword) != 0) {
       _switchLoading();
       return "Password and confirm password don't match";
     }
@@ -286,7 +285,7 @@ class _RegisterWidgetState extends State<RegisterWidget> {
 
   _showSnapBar(String text) {
     ScaffoldMessenger.of(context).showSnackBar(
-      new SnackBar(
+      SnackBar(
         content: Text(text),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),

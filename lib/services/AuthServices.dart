@@ -99,4 +99,20 @@ class AuthServices {
     return false;
   }
 
+  Future<bool> reVerifiedEmail(String email) async {
+    try {
+      Uri url = Uri.parse('${UrlConstants.backendUrlV1}/auth/re-verify/email?email=$email');
+
+      http.Response response = await http.get(url);
+
+      if(response.statusCode == 200) {
+        return true;
+      }
+
+    } catch (error) {
+
+    }
+    return false;
+  }
+
 }

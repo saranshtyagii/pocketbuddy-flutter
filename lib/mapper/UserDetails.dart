@@ -4,9 +4,6 @@ import 'package:PocketBuddy/constants/ConstantValues.dart';
 import 'package:PocketBuddy/main.dart';
 import 'package:PocketBuddy/utils/AuthUtils.dart';
 
-import '../constants/ConstantValues.dart';
-import '../main.dart';
-import '../utils/AuthUtils.dart';
 
 class UserDetails {
   final String userId;

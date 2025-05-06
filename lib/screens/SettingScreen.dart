@@ -84,14 +84,14 @@ class _SettingScreenState extends State<SettingScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text(
-                    "${savedUserDetails?.userFirstName ?? "User"}",
+                    savedUserDetails?.userFirstName ?? "User",
                     style: GoogleFonts.farro(
                       fontSize: 18,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
                   Text(
-                    "${savedUserDetails?.email ?? ""}",
+                    savedUserDetails?.email ?? "",
                     style: GoogleFonts.abel(fontSize: 14),
                   ),
                 ],
@@ -147,28 +147,22 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   void _logout(BuildContext context) async {
-    try {
-      final isLogout = await AuthUtils().logout();
+    final isLogout = await AuthUtils().logout();
 
-      if (!context.mounted) return;
+    if (!context.mounted) return;
 
-      if (isLogout) {
-        Navigator.of(context).pushAndRemoveUntil(
-          MaterialPageRoute(builder: (_) => const AuthScreen()),
-          (route) => false,
-        );
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Logout failed. Please try again.')),
-        );
-      }
-    } catch (e) {
-      if (!context.mounted) return;
-      ScaffoldMessenger.of(
-        context,
-      ).showSnackBar(SnackBar(content: Text('Error during logout: $e')));
+    if (isLogout) {
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AuthScreen()),
+            (route) => false,
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Logout failed. Please try again.')),
+      );
     }
   }
+
 
   void _loadUserDetails() async {
     savedUserDetails = await UserDetails.getInstance();

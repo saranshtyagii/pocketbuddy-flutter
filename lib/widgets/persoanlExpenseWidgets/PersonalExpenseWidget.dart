@@ -181,7 +181,7 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Theme.of(context).colorScheme.surfaceVariant,
+          color: Theme.of(context).colorScheme.surfaceContainerHighest,
           borderRadius: BorderRadius.circular(20),
         ),
         child: Column(
@@ -326,7 +326,7 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
     }
 
     final user = await UserDetails.getInstance();
-    if (user == null || user.userId == null) {
+    if (user == null) {
       _showErrorMessage("User not found");
       return;
     }
@@ -358,10 +358,10 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
   }
 
   void _openExpenseDetails(PersonalExpenseData expense) {
-    final _editFormKey = GlobalKey<FormState>();
-    final TextEditingController _editDescriptionController =
+    final editFormKey = GlobalKey<FormState>();
+    final TextEditingController editDescriptionController =
         TextEditingController(text: expense.description);
-    final TextEditingController _editAmountController = TextEditingController(
+    final TextEditingController editAmountController = TextEditingController(
       text: expense.amount.toString(),
     );
 
@@ -433,11 +433,11 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
                   const SizedBox(height: 16),
                   isEditing
                       ? Form(
-                        key: _editFormKey,
+                        key: editFormKey,
                         child: Column(
                           children: [
                             TextFormField(
-                              controller: _editDescriptionController,
+                              controller: editDescriptionController,
                               decoration: const InputDecoration(
                                 labelText: "Description",
                                 prefixIcon: Icon(Icons.description),
@@ -452,7 +452,7 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
                             ),
                             const SizedBox(height: 12),
                             TextFormField(
-                              controller: _editAmountController,
+                              controller: editAmountController,
                               keyboardType: TextInputType.number,
                               decoration: const InputDecoration(
                                 labelText: "Amount",
@@ -561,7 +561,7 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
 
   _showSnapBar(String text) {
     ScaffoldMessenger.of(context).showSnackBar(
-      new SnackBar(
+      SnackBar(
         content: Text(text),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),

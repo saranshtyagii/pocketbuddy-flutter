@@ -245,7 +245,7 @@ class _NoExpenseFoundWidgetState extends State<NoExpenseFoundWidget> {
     }
 
     UserDetails? savedUser = await UserDetails.getInstance();
-    if (savedUser == null || savedUser.userId == null) {
+    if (savedUser == null) {
       _showErrorMessage("User not found.");
       return;
     }
@@ -270,7 +270,7 @@ class _NoExpenseFoundWidgetState extends State<NoExpenseFoundWidget> {
 
   _showErrorMessage(text) {
     ScaffoldMessenger.of(context).showSnackBar(
-      new SnackBar(
+      SnackBar(
         content: Text(text),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),

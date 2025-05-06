@@ -62,7 +62,7 @@ class _JoinGroupWidgetState extends State<JoinGroupWidget> {
                     const SizedBox(height: 8),
                     Text(
                       widget.joinGroup.groupDescription,
-                      style: TextStyle(fontSize: 16, color: theme.onBackground),
+                      style: TextStyle(fontSize: 16, color: theme.onSurface),
                     ),
                     const SizedBox(height: 8),
                     Text(
@@ -87,7 +87,7 @@ class _JoinGroupWidgetState extends State<JoinGroupWidget> {
                           widget.joinMembers.isEmpty
                               ? Text(
                                 "No members yet.",
-                                style: TextStyle(color: theme.onBackground),
+                                style: TextStyle(color: theme.onSurface),
                               )
                               : ListView.separated(
                                 itemCount: widget.joinMembers.length,

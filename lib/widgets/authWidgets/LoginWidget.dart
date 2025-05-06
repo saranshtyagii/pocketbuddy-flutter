@@ -30,8 +30,8 @@ class _LoginwidgetState extends State<Loginwidget> {
   bool _passwordVisibility = false;
   bool _showLoading = false;
   bool _showResetPasswordLoading = false;
-  bool _isOtpGenerateRequested = false;
-  bool _resendOtp = false;
+  final bool _isOtpGenerateRequested = false;
+  final bool _resendOtp = false;
 
   final authService = AuthServices();
   final userServices = UserServices();
@@ -491,7 +491,7 @@ class _LoginwidgetState extends State<Loginwidget> {
 
   _showSnapBar(String text) {
     ScaffoldMessenger.of(context).showSnackBar(
-      new SnackBar(
+      SnackBar(
         content: Text(text),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
@@ -500,7 +500,7 @@ class _LoginwidgetState extends State<Loginwidget> {
   }
   
   void _showConfigDialog(BuildContext context) {
-    final TextEditingController _hostController = TextEditingController();
+    final TextEditingController hostController = TextEditingController();
 
     showDialog(
       context: context,
@@ -511,7 +511,7 @@ class _LoginwidgetState extends State<Loginwidget> {
             mainAxisSize: MainAxisSize.min,
             children: [
               TextField(
-                controller: _hostController,
+                controller: hostController,
                 decoration: InputDecoration(
                   labelText: 'Host Port Name',
                   border: OutlineInputBorder(),
@@ -530,7 +530,7 @@ class _LoginwidgetState extends State<Loginwidget> {
             ),
             ElevatedButton(
               onPressed: () async {
-                final hostPortName = _hostController.text;
+                final hostPortName = hostController.text;
 
                 if (hostPortName.isNotEmpty) {
                   // Save to secure storage
