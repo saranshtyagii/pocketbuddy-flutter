@@ -165,7 +165,7 @@ class _SettingScreenState extends State<SettingScreen> {
 
 
   void _loadUserDetails() async {
-    savedUserDetails = await UserDetails.getInstance();
+    savedUserDetails = await UserDetails.fetchUserDetailsFromStorage();
     setState(() {
       _loadingUserDetails = false;
     });

@@ -1,5 +1,6 @@
 class UserJoinGroup {
   final String groupId;
+  final String discoverableId;
   final String groupName;
   final String groupDescription;
   final String createdByUserId;
@@ -8,6 +9,7 @@ class UserJoinGroup {
 
   UserJoinGroup({
     required this.groupId,
+    required this.discoverableId,
     required this.groupName,
     required this.groupDescription,
     required this.createdByUserId,
@@ -18,6 +20,7 @@ class UserJoinGroup {
   factory UserJoinGroup.fromJson(Map<String, dynamic> json) {
     return UserJoinGroup(
       groupId: json['groupId'] as String,
+      discoverableId: json['discoverableId'],
       groupName: json['groupName'] as String,
       groupDescription: json['groupDescription'] as String,
       createdByUserId: json['createdByUserId'] as String,
@@ -29,6 +32,7 @@ class UserJoinGroup {
   Map<String, dynamic> toJson() {
     return {
       'groupId': groupId,
+      'discoverableId' : discoverableId,
       'groupName': groupName,
       'groupDescription': groupDescription,
       'createdByUserId': createdByUserId,

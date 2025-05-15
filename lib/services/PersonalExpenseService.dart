@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 class PersonalExpenseService {
   Future<List<PersonalExpenseData>> fetchExpense() async {
     try {
-      UserDetails? userDetails = await UserDetails.getInstance();
+      UserDetails? userDetails = await UserDetails.fetchUserDetailsFromStorage();
       String token = await AuthUtils().getAuthToken();
       Uri url = Uri.parse(
         '${UrlConstants.backendUrlV1}/personal/fetchAll?userId=${userDetails?.userId}',

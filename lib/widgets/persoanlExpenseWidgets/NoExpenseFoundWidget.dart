@@ -244,7 +244,7 @@ class _NoExpenseFoundWidgetState extends State<NoExpenseFoundWidget> {
       return;
     }
 
-    UserDetails? savedUser = await UserDetails.getInstance();
+    UserDetails? savedUser = await UserDetails.fetchUserDetailsFromStorage();
     if (savedUser == null) {
       _showErrorMessage("User not found.");
       return;

@@ -5,7 +5,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 class NoGroupExpenseWidget extends StatefulWidget {
-  const NoGroupExpenseWidget({super.key, required this.userJoinGroup, required this.refreshExpenseData, required this.joinMembers});
+  const NoGroupExpenseWidget({
+    super.key,
+    required this.userJoinGroup,
+    required this.refreshExpenseData,
+    required this.joinMembers,
+  });
   final UserJoinGroup userJoinGroup;
   final Function refreshExpenseData;
   final Map<String, String> joinMembers;
@@ -25,10 +30,7 @@ class _NoGroupExpenseWidgetState extends State<NoGroupExpenseWidget> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text(
-                "No Expense Found!",
-                style: GoogleFonts.lato(fontSize: 24),
-              ),
+              Text("No Expense Found!", style: GoogleFonts.lato(fontSize: 24)),
               Text(
                 "Please add some expense",
                 style: GoogleFonts.lato(fontSize: 18),
@@ -51,10 +53,7 @@ class _NoGroupExpenseWidgetState extends State<NoGroupExpenseWidget> {
               ),
               child: Text(
                 "+",
-                style: TextStyle(
-                  fontSize: 28,
-                  color: CupertinoColors.white,
-                ),
+                style: TextStyle(fontSize: 28, color: CupertinoColors.white),
               ),
             ),
           ),
@@ -65,8 +64,14 @@ class _NoGroupExpenseWidgetState extends State<NoGroupExpenseWidget> {
 
   _pushRegisterExpenseWidget() {
     Navigator.of(context).push(
-      MaterialPageRoute(builder: (context) => RegisterGroupExpenseWidget(userJoinGroup: widget.userJoinGroup, joinMembers: widget.joinMembers,))
+      MaterialPageRoute(
+        builder:
+            (context) => RegisterGroupExpenseWidget(
+              userJoinGroup: widget.userJoinGroup,
+              joinMembers: widget.joinMembers,
+              refreshExpense: widget.refreshExpenseData,
+            ),
+      ),
     );
   }
-
 }

@@ -24,9 +24,14 @@ class GroupExpenseService {
 
       if (response.statusCode == 200) {
         final jsonResponse = jsonDecode(response.body);
-        print("User Joined Group: \n $jsonResponse");
+        List<GroupExpenseDetails> expenses = (jsonResponse as List)
+            .map((item) => GroupExpenseDetails.fromJson(item))
+            .toList();
+        return expenses;
       }
-    } catch (error) {}
+    } catch (error) {
+      print(error);
+    }
     return [];
   }
 
@@ -58,4 +63,29 @@ class GroupExpenseService {
 
     return members;
   }
+
+  Future<bool> registerExpense(Map<String, dynamic> registerGroupExpense) async {
+    try {
+      Uri url = Uri.parse('${UrlConstants.backendUrlV1}/group-expenses/register');
+      String token = await AuthUtils().getAuthToken();
+
+      final response = await http.post(
+        url,
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode(registerGroupExpense),
+      );
+
+      if (response.statusCode == 200) {
+        return true;
+      }
+    } catch (error) {
+      // ignore
+    }
+
+    return false;
+  }
+
 }

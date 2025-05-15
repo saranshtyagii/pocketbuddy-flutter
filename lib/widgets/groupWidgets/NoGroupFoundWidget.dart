@@ -2,11 +2,14 @@ import 'dart:io';
 
 import 'package:PocketBuddy/constants/ConstantValues.dart';
 import 'package:PocketBuddy/mapper/UserDetails.dart';
+import 'package:PocketBuddy/services/GroupDetailsService.dart';
 import 'package:PocketBuddy/utils/AuthUtils.dart';
 import 'package:PocketBuddy/widgets/groupWidgets/RegisterGroupWidget.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
+
+import 'JoinGroupWidget.dart';
 
 class NoGroupFoundWidget extends StatefulWidget {
   const NoGroupFoundWidget({super.key, required this.refreshGroupList});
@@ -28,6 +31,9 @@ class _NoGroupFoundWidgetState extends State<NoGroupFoundWidget> {
 
   late BannerAd bannerAd;
   bool isAdLoaded = false;
+  bool _findingGroup = false;
+
+  final groupDetailService = GroupDetailService();
 
   @override
   void initState() {
@@ -63,7 +69,7 @@ class _NoGroupFoundWidgetState extends State<NoGroupFoundWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return _loadingData
+    return _loadingData || _findingGroup
         ? const Center(child: CircularProgressIndicator())
         : Padding(
           padding: const EdgeInsets.all(16),
@@ -93,7 +99,9 @@ class _NoGroupFoundWidgetState extends State<NoGroupFoundWidget> {
                       ),
                       const SizedBox(width: 14),
                       ElevatedButton(
-                        onPressed: () {},
+                        onPressed: () {
+                          _findGroup();
+                        },
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -198,16 +206,37 @@ class _NoGroupFoundWidgetState extends State<NoGroupFoundWidget> {
 
   Future<void> _loadPreRequestData() async {
     authToken = await AuthUtils().getAuthToken();
-    loginUser = await UserDetails.getInstance();
+    loginUser = await UserDetails.fetchUserDetailsFromStorage();
     setState(() {
       _loadingData = false;
     });
   }
 
-  void _findGroup() {
-    
+  void _findGroup() async {
+    setState(() {
+      _findingGroup = true;
+    });
+    // extract data
+    final groupId = _searchController.text.trim();
+    final findGroup = await groupDetailService.findGroup(groupId);
+    final joinMembers = await groupDetailService.fetchJoinMembers(groupId);
+    if (findGroup != null) {
+      Navigator.of(context).push(
+        MaterialPageRoute(
+          builder:
+              (context) => JoinGroupWidget(
+            joinGroup: findGroup!,
+            joinMembers: joinMembers,
+          ),
+        ),
+      );
+      setState(() {
+        _findingGroup = false;
+      });
+    } else {
+      // show scafold message error message that invalid groupID
+    }
   }
-
   void _registerGroup() {
     
   }

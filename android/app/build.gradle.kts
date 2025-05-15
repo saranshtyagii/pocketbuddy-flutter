@@ -39,3 +39,9 @@ android {
 flutter {
     source = "../.."
 }
+
+dependencies {
+    implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk7:2.1.21")
+    implementation("com.google.android.gms:play-services-ads:24.2.0")
+}
+

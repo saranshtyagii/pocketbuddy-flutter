@@ -14,8 +14,6 @@ class UserDetails {
   final String password;
   final bool emailVerified;
 
-  static UserDetails? _savedUserDetails;
-
   UserDetails({
     required this.userId,
     required this.userFirstName,
@@ -52,6 +50,7 @@ class UserDetails {
 
   static saveUserDetailsToStorage(UserDetails userDetails) async {
     final data = jsonEncode(convertToJson(userDetails));
+    await storage.delete(key: ConstantValues.userKey);
     await storage.write(key: ConstantValues.userKey, value: data);
   }
 
@@ -67,11 +66,6 @@ class UserDetails {
   static UserDetails convertStringToUserDetails(String data) {
     Map<String, dynamic> jsonUser = jsonDecode(data);
     return jsonToUserDetails(jsonUser);
-  }
-
-  static Future<UserDetails?> getInstance() async {
-    _savedUserDetails ??= await fetchUserDetailsFromStorage();
-    return _savedUserDetails;
   }
 
 }

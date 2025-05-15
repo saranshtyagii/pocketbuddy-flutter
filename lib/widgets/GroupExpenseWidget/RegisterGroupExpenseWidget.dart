@@ -1,4 +1,8 @@
+import 'dart:convert';
+
+import 'package:PocketBuddy/mapper/UserDetails.dart';
 import 'package:PocketBuddy/mapper/UserJoinGroup.dart';
+import 'package:PocketBuddy/services/GroupExpenseService.dart';
 import 'package:flutter/material.dart';
 
 class RegisterGroupExpenseWidget extends StatefulWidget {
@@ -6,10 +10,12 @@ class RegisterGroupExpenseWidget extends StatefulWidget {
     super.key,
     required this.userJoinGroup,
     required this.joinMembers,
+    required this.refreshExpense
   });
 
   final UserJoinGroup userJoinGroup;
   final Map<String, String> joinMembers;
+  final Function refreshExpense;
 
   @override
   State<StatefulWidget> createState() {
@@ -52,11 +58,16 @@ class _RegisterGroupExpenseWidgetState
 
   List<String> _selectMembersUserId = [];
 
+  final groupExpenseService = GroupExpenseService();
+
   @override
   void initState() {
     super.initState();
     _selectedCategoryIcon = expenseCategories.keys.first;
     _selectedCategoryName = expenseCategories[_selectedCategoryIcon];
+
+    // Select all members by default
+    _selectMembersUserId = widget.joinMembers.keys.toList();
   }
 
   @override
@@ -184,12 +195,7 @@ class _RegisterGroupExpenseWidgetState
                     width: double.infinity,
                     child: ElevatedButton(
                       onPressed: () {
-                        if (_formKey.currentState!.validate()) {
-                          // Handle form submission logic here
-                          print('Category: $_selectedCategoryName');
-                          print('Description: ${_descriptionController.text}');
-                          print('Amount: ${_amountController.text}');
-                        }
+                        _registerExpense();
                       },
                       style: ElevatedButton.styleFrom(
                         padding: EdgeInsets.all(18),
@@ -253,9 +259,7 @@ class _RegisterGroupExpenseWidgetState
               onPressed: () {
                 setState(() {
                   // Save list of unselected userIds
-                  _selectMembersUserId = widget.joinMembers.keys
-                      .where((userId) => !selectedUserIds.contains(userId))
-                      .toList();
+                  _selectMembersUserId = selectedUserIds.toList();
                 });
                 Navigator.pop(context);
               },
@@ -267,5 +271,48 @@ class _RegisterGroupExpenseWidgetState
     );
   }
 
+
+  _registerExpense() async {
+    if (!_formKey.currentState!.validate()) return;
+
+    if (_selectMembersUserId.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Included members are empty')),
+      );
+      return;
+    }
+
+    final description = _descriptionController.text.trim();
+    final amount = double.parse(_amountController.text);
+    final splitAmount = amount / _selectMembersUserId.length;
+
+    final Map<String, double> includedMembers = {};
+
+    widget.joinMembers.forEach((userId, fullName) {
+      includedMembers[userId] =
+      _selectMembersUserId.contains(userId) ? splitAmount : 0.00;
+    });
+
+    UserDetails? savedUser = await UserDetails.fetchUserDetailsFromStorage();
+
+    final Map<String, dynamic> registerGroupExpense = {
+      "groupId": widget.userJoinGroup.groupId,
+      "description": description,
+      "amount": amount,
+      "registerByUserId": savedUser!.userId,
+      "includedMembers": includedMembers,
+    };
+
+    bool isSuccess = await groupExpenseService.registerExpense(registerGroupExpense);
+
+    if (isSuccess) {
+      Navigator.pop(context);
+      widget.refreshExpense();
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to register expense')),
+      );
+    }
+  }
 
 }

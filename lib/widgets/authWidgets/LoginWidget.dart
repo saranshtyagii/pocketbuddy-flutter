@@ -97,7 +97,7 @@ class _LoginwidgetState extends State<Loginwidget> {
                             });
                           },
                           icon:
-                              _passwordVisibility
+                              !_passwordVisibility
                                   ? Icon(Icons.visibility_off)
                                   : Icon(Icons.visibility),
                         ),
@@ -219,34 +219,34 @@ class _LoginwidgetState extends State<Loginwidget> {
                 ),
               ),
               SizedBox(height: 22),
-              InkWell(
-                onTap: () {
-                  _buildLoginWithPhone();
-                },
-                child: Container(
-                  width: double.infinity,
-                  padding: EdgeInsets.all(15),
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.onSurface,
-                    borderRadius: BorderRadius.circular(50),
-                  ),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    crossAxisAlignment: CrossAxisAlignment.center,
-                    children: [
-                      Icon(Icons.phone, color: Theme.of(context).colorScheme.surface,),
-                      SizedBox(width: 8),
-                      Text(
-                        "Login With Phone",
-                        style: TextStyle(
-                          color: Theme.of(context).colorScheme.surface,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
+              // InkWell(
+              //   onTap: () {
+              //     _buildLoginWithPhone();
+              //   },
+              //   child: Container(
+              //     width: double.infinity,
+              //     padding: EdgeInsets.all(15),
+              //     decoration: BoxDecoration(
+              //       color: Theme.of(context).colorScheme.onSurface,
+              //       borderRadius: BorderRadius.circular(50),
+              //     ),
+              //     child: Row(
+              //       mainAxisAlignment: MainAxisAlignment.center,
+              //       crossAxisAlignment: CrossAxisAlignment.center,
+              //       children: [
+              //         Icon(Icons.phone, color: Theme.of(context).colorScheme.surface,),
+              //         SizedBox(width: 8),
+              //         Text(
+              //           "Login With Phone",
+              //           style: TextStyle(
+              //             color: Theme.of(context).colorScheme.surface,
+              //             fontWeight: FontWeight.bold,
+              //           ),
+              //         ),
+              //       ],
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         ),

@@ -325,7 +325,7 @@ class _PersonalExpenseWidgetState extends State<PersonalExpenseWidget> {
       return;
     }
 
-    final user = await UserDetails.getInstance();
+    final user = await UserDetails.fetchUserDetailsFromStorage();
     if (user == null) {
       _showErrorMessage("User not found");
       return;
